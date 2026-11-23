@@ -53,6 +53,13 @@ android {
     }
 
     buildTypes {
+        debug {
+            // firebase-appcheck-debug reads R.string.firebase_app_check_debug_token. The value comes
+            // from local.properties or the environment (never committed); release builds ignore it.
+            if (appCheckDebugToken.isNotEmpty()) {
+                resValue("string", "firebase_app_check_debug_token", appCheckDebugToken)
+            }
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -68,6 +75,7 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+        resValues = true
     }
 
     testOptions {
