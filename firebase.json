@@ -91,5 +91,10 @@
     "ui": {
       "enabled": false
     }
+  },
+  "auth": {
+    "providers": {
+      "anonymous": true
+    }
   }
 }
