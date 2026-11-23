@@ -59,7 +59,8 @@ Integrity.
 3. Run the style checks: `./gradlew ktlintCheck detekt`
 4. To fix formatting, run: `./gradlew ktlintFormat`
 
-The core tests run every case in `routing-cases.json`, `journal-cases.json`,
+The core tests run every case in `routing-cases.json` (text, speech, and
+`speechCheck`), `journal-cases.json`,
 `language-cases.json`, and every line of the golden sets. Gradle passes the
 contract folder as the `contractDir` system property. To use another folder,
 add `-PcontractDir=/path/to/contract`.
@@ -100,10 +101,19 @@ repository, platform adapter, SDK. Services do not import Firebase types.
   goes to the cloud (`VALIDATION_ESCALATION`) or to the queue.
 - If reading the signals or running the router throws, the app makes one call
   with a `PREFER_ON_DEVICE` model (`ROUTER_FALLBACK`).
-- English voice uses the on-device speech recognizer (Android 12 and later).
-  Pidgin and Yoruba voice is recorded as Opus in Ogg (Android 10 and later) or
-  AAC, and sent to the cloud model with the `voice-v1` prompt. Offline, the
-  clip waits in the queue.
+- Voice language is "Any" (`auto`) by default. The trader can also pick English, or
+  Pidgin or Yoruba, in Settings.
+- In "Any" mode on Android 13 and later, the phone listens with its on-device
+  recognizer. The app captures the microphone itself and gives the same audio to the
+  recognizer, so it keeps a compressed clip (AAC) at the same time.
+- After the phone listens, the app runs the mixed-speech check (`routing.md`). If the
+  words cannot be trusted, the clip goes to the cloud model (`SPEECH_MIXED`). Offline,
+  the clip waits in the queue. Otherwise the words go into the text box.
+- Before Android 13 the microphone cannot be shared, so "Any" mode records the clip
+  and sends it to the cloud model (`SPEECH_CLOUD`).
+- English mode listens on the phone and skips the check. Pidgin or Yoruba mode
+  records Opus in Ogg (Android 10 and later) or AAC, and sends it to the cloud model
+  with the `voice-v1` prompt.
 - The cloud model name comes from Remote Config `cloud_model_name`.
 
 ## Firestore

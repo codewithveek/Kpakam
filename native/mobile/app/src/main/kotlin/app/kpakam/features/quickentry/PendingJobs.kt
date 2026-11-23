@@ -49,7 +49,7 @@ private fun JobCard(job: AiJob, viewModel: QuickEntryViewModel) {
                 style = MaterialTheme.typography.labelLarge,
             )
             when (job.state) {
-                AiJobState.SUCCEEDED -> StatusChip(Icons.Filled.CheckCircle, stringResource(R.string.jobs_ready))
+                AiJobState.SUCCEEDED -> StatusChip(Icons.Filled.CheckCircle, stringResource(R.string.drafts_ready))
                 AiJobState.FAILED -> StatusChip(Icons.Filled.ErrorOutline, stringResource(R.string.jobs_failed))
                 else -> job.queueReason?.let { QueueBadge(it) }
             }

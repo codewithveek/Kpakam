@@ -1,11 +1,14 @@
 package app.kpakam.platform.speech
 
 import android.content.Context
+import android.content.Intent
+import android.media.AudioFormat
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +20,8 @@ import kotlin.coroutines.resume
 
 /** The result of on-device speech recognition. */
 sealed interface TranscriptResult {
-    data class Heard(val text: String) : TranscriptResult
+    /** [confidence] is the recogniser's score for [text] (0–1), or `null` when it reported none. */
+    data class Heard(val text: String, val confidence: Double?) : TranscriptResult
 
     data object NothingHeard : TranscriptResult
 
@@ -26,8 +30,11 @@ sealed interface TranscriptResult {
 
 /** Turns English speech into text with the on-device recogniser (SPEECH_DEVICE). */
 interface SpeechTranscriber {
-    /** Listens for up to 30 seconds and returns the transcript. */
-    suspend fun listen(): TranscriptResult
+    /**
+     * Listens for up to 30 seconds and returns the transcript. With a [shared] capture (Android 13+),
+     * the recogniser reads the app's own microphone audio, so the same audio is also kept as a clip.
+     */
+    suspend fun listen(shared: SharedCapture? = null): TranscriptResult
 
     /** Stops listening early; [listen] then returns what it heard. */
     fun stop()
@@ -43,14 +50,14 @@ class AndroidSpeechTranscriber
         private val handler = Handler(Looper.getMainLooper())
         private var recognizer: SpeechRecognizer? = null
 
-        override suspend fun listen(): TranscriptResult =
+        override suspend fun listen(shared: SharedCapture?): TranscriptResult =
             withContext(Dispatchers.Main) {
                 val created = create()
                 recognizer = created
                 try {
                     suspendCancellableCoroutine { continuation ->
                         created.setRecognitionListener(Listener { continuation.resume(it) })
-                        created.startListening(LocalSpeechChecker.englishIntent())
+                        created.startListening(intentFor(shared))
                         handler.postDelayed({ created.stopListening() }, MAX_LISTEN_MS)
                         continuation.invokeOnCancellation { handler.post { created.cancel() } }
                     }
@@ -63,6 +70,17 @@ class AndroidSpeechTranscriber
 
         override fun stop() {
             handler.post { recognizer?.stopListening() }
+        }
+
+        private fun intentFor(shared: SharedCapture?): Intent {
+            val intent = LocalSpeechChecker.englishIntent()
+            if (shared is PipedCapture && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE, shared.recognizerAudio)
+                intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_CHANNEL_COUNT, 1)
+                intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_ENCODING, AudioFormat.ENCODING_PCM_16BIT)
+                intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_SAMPLING_RATE, PipedCapture.SAMPLE_RATE)
+            }
+            return intent
         }
 
         private fun create(): SpeechRecognizer =
@@ -84,7 +102,18 @@ class AndroidSpeechTranscriber
 
             override fun onResults(results: Bundle) {
                 val text = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull()?.trim()
-                finish(if (text.isNullOrEmpty()) TranscriptResult.NothingHeard else TranscriptResult.Heard(text))
+                val score = results.getFloatArray(SpeechRecognizer.CONFIDENCE_SCORES)?.firstOrNull()
+                val confidence = score?.toDouble()?.takeIf { it in 0.0..1.0 }
+                finish(
+                    if (text.isNullOrEmpty()) {
+                        TranscriptResult.NothingHeard
+                    } else {
+                        TranscriptResult.Heard(
+                            text,
+                            confidence,
+                        )
+                    },
+                )
             }
 
             override fun onError(error: Int) {

@@ -30,7 +30,9 @@ class ModelRunnerTest {
     ): ModelRunner {
         val config = FakeConfig(Contract.config.copy(cloudRateLimitPerMinute = rateLimit))
         val signals =
-            RouteSignalsProvider(config, FakeNetwork(online), { null }, FakeDeviceModel(), FakeSettings(), FakeSpeech)
+            RouteSignalsProvider(config, FakeNetwork(online), {
+                null
+            }, FakeDeviceModel(), FakeSettings(), FakeSpeech, FakeSharedMic)
         return ModelRunner(
             device,
             cloud,

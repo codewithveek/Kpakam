@@ -21,16 +21,20 @@ import app.kpakam.inference.queue.DrainTrigger
 import app.kpakam.inference.queue.QueueScheduler
 import app.kpakam.platform.battery.BatteryMonitor
 import app.kpakam.platform.battery.BatterySource
+import app.kpakam.platform.files.AndroidDocumentWriter
+import app.kpakam.platform.files.DocumentWriter
 import app.kpakam.platform.firebase.ConfigSource
 import app.kpakam.platform.firebase.RemoteConfigSource
 import app.kpakam.platform.network.ConnectivitySource
 import app.kpakam.platform.network.NetworkMonitor
 import app.kpakam.platform.speech.AndroidDraftReader
+import app.kpakam.platform.speech.AndroidSharedMic
 import app.kpakam.platform.speech.AndroidSpeechTranscriber
 import app.kpakam.platform.speech.AndroidVoiceRecorder
 import app.kpakam.platform.speech.DraftReader
 import app.kpakam.platform.speech.LocalSpeechChecker
 import app.kpakam.platform.speech.LocalSpeechSource
+import app.kpakam.platform.speech.SharedMic
 import app.kpakam.platform.speech.SpeechTranscriber
 import app.kpakam.platform.speech.VoiceRecorder
 import dagger.Binds
@@ -66,6 +70,10 @@ abstract class BindingsModule {
     @Binds abstract fun recorder(impl: AndroidVoiceRecorder): VoiceRecorder
 
     @Binds abstract fun reader(impl: AndroidDraftReader): DraftReader
+
+    @Binds abstract fun sharedMic(impl: AndroidSharedMic): SharedMic
+
+    @Binds abstract fun documentWriter(impl: AndroidDocumentWriter): DocumentWriter
 
     @Binds abstract fun drainTrigger(impl: QueueScheduler): DrainTrigger
 

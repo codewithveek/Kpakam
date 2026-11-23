@@ -95,4 +95,10 @@ object FakeSpeech : LocalSpeechSource {
     override suspend fun installAtIdle() = Unit
 }
 
+object FakeSharedMic : app.kpakam.platform.speech.SharedMic {
+    override val supported: Boolean = true
+
+    override fun open(name: String): app.kpakam.platform.speech.SharedCapture? = null
+}
+
 val fixedClock: Clock = Clock.fixed(Instant.parse("2026-11-24T08:41:00Z"), ZoneOffset.UTC)

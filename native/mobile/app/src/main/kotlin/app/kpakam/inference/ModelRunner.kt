@@ -44,17 +44,11 @@ class ModelRunner
             }
         }
 
-        /** Sends a voice clip to the cloud model with the voice prompt (SPEECH_CLOUD). */
-        suspend fun runVoice(clip: Attachment): RunOutcome {
+        /** Sends a voice clip to the cloud model with the voice prompt; [reason] is SPEECH_CLOUD or SPEECH_MIXED. */
+        suspend fun runVoice(clip: Attachment, reason: ReasonCode = ReasonCode.SPEECH_CLOUD): RunOutcome {
             val trace = TraceBuilder()
-            if (!signals.cloudReachable) {
-                return RunOutcome.NeedsQueue(
-                    ReasonCode.SPEECH_CLOUD,
-                    blockedReason(),
-                    trace.queued(),
-                )
-            }
-            val job = CloudJob(InferenceRequest(prompts.voice(), clip), ReasonCode.SPEECH_CLOUD, prompts.voiceVersion)
+            if (!signals.cloudReachable) return RunOutcome.NeedsQueue(reason, blockedReason(), trace.queued())
+            val job = CloudJob(InferenceRequest(prompts.voice(), clip), reason, prompts.voiceVersion)
             return runInCloud(job, trace)
         }
 

@@ -34,13 +34,19 @@ sealed interface EntryMessage {
 
     data object ReadFailed : EntryMessage
 
-    data class Queued(val queueReason: QueueReason) : EntryMessage
+    data class Queued(val queueReason: QueueReason, val voice: Boolean = false) : EntryMessage
 
     data class Saved(val count: Int) : EntryMessage
 
     data object AlreadySaved : EntryMessage
 
     data object NoSpeech : EntryMessage
+
+    /** The phone wrote down what it heard; the trader checks the words first. */
+    data object CheckWords : EntryMessage
+
+    /** Mixed languages heard: the voice note is being read online. */
+    data object Mixed : EntryMessage
 
     data object MicDenied : EntryMessage
 

@@ -76,7 +76,7 @@ private fun HistoryMessageRow(message: HistoryMessage, onDismiss: () -> Unit) {
             HistoryMessage.Fixed -> stringResource(R.string.history_fix_saved)
             is HistoryMessage.Problem ->
                 stringResource(
-                    message.error?.let(::ledgerErrorLabel) ?: R.string.draft_error_other,
+                    message.error?.let(::ledgerErrorLabel) ?: R.string.error_generic,
                 )
         }
     Row(horizontalArrangement = Arrangement.SpaceBetween) {
@@ -96,7 +96,7 @@ private fun CorrectionDialogs(dialog: CorrectionDialog?, viewModel: LedgerViewMo
                 text = { Text(stringResource(R.string.history_undo_confirm)) },
                 confirmButton = {
                     TextButton(onClick = { viewModel.confirmUndo(dialog.journalId) }) {
-                        Text(stringResource(R.string.history_undo_yes))
+                        Text(stringResource(R.string.history_undo))
                     }
                 },
                 dismissButton = {

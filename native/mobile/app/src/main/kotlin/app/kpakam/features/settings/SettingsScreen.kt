@@ -1,5 +1,7 @@
 package app.kpakam.features.settings
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +14,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -30,7 +33,7 @@ import app.kpakam.shared.ui.MinTouchTarget
 import app.kpakam.shared.ui.SectionHeader
 import app.kpakam.shared.ui.modelStateLabel
 
-/** Settings and the Stats section. */
+/** Settings, the trader's numbers, and "Download my records". */
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -39,40 +42,59 @@ fun SettingsScreen(viewModel: SettingsViewModel = hiltViewModel()) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         SectionHeader(stringResource(R.string.settings_title))
-        SwitchRow(
-            R.string.settings_data_saver,
-            R.string.settings_data_saver_help,
-            state.settings.dataSaver,
-            viewModel::setDataSaver,
-        )
-        Text(stringResource(R.string.settings_voice), style = MaterialTheme.typography.titleLarge)
-        VoiceLanguage.entries.forEach { language ->
-            RadioRow(language, state.settings.voiceLanguage == language) { viewModel.setVoiceLanguage(language) }
+        SwitchRow(R.string.settings_data_saver, R.string.settings_data_saver_help, state.settings.dataSaver) {
+            viewModel.setDataSaver(it)
         }
-        SwitchRow(
-            R.string.settings_analytics,
-            R.string.settings_analytics_help,
-            state.settings.analyticsOptIn,
-            viewModel::setAnalytics,
-        )
-        SectionHeader(stringResource(R.string.settings_stats))
-        Text(stringResource(R.string.settings_on_device_share, state.stats.onDeviceShare))
-        Text(stringResource(R.string.settings_ai_calls, state.stats.total))
-        Text(stringResource(R.string.settings_model_state, stringResource(modelStateLabel(state.model))))
-        Text(
-            stringResource(
-                when {
-                    !state.network.online -> R.string.settings_network_offline
-                    state.network.metered -> R.string.settings_network_metered
-                    else -> R.string.settings_network_unmetered
-                },
-            ),
-        )
+        VoiceSection(state.settings.voiceLanguage, viewModel::setVoiceLanguage)
+        SwitchRow(R.string.settings_analytics, null, state.settings.analyticsOptIn) { viewModel.setAnalytics(it) }
+        StatsSection(state)
+        AccountSection(state.exportMessage, viewModel::export)
     }
 }
 
 @Composable
-private fun SwitchRow(title: Int, help: Int, checked: Boolean, onChange: (Boolean) -> Unit) {
+private fun VoiceSection(selected: VoiceLanguage, onSelect: (VoiceLanguage) -> Unit) {
+    Text(stringResource(R.string.settings_voice), style = MaterialTheme.typography.titleLarge)
+    VoiceLanguage.entries.forEach { language ->
+        RadioRow(language, selected == language) { onSelect(language) }
+    }
+    Text(stringResource(voiceHelp(selected)), style = MaterialTheme.typography.bodyMedium)
+}
+
+@Composable
+private fun StatsSection(state: SettingsUiState) {
+    SectionHeader(stringResource(R.string.settings_stats))
+    Text(stringResource(R.string.settings_on_device_share, state.stats.onDeviceShare))
+    Text(stringResource(R.string.settings_cloud_calls, state.stats.inCloud))
+    Text(stringResource(R.string.settings_phone_reading, stringResource(modelStateLabel(state.model))))
+    val network =
+        when {
+            !state.network.online -> R.string.settings_network_offline
+            state.network.metered -> R.string.settings_network_metered
+            else -> R.string.settings_network_unmetered
+        }
+    Text(stringResource(network))
+}
+
+@Composable
+private fun AccountSection(message: ExportMessage?, onExport: (String) -> Unit) {
+    val picker =
+        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+            uri?.let { onExport(it.toString()) }
+        }
+    SectionHeader(stringResource(R.string.settings_account))
+    OutlinedButton(onClick = { picker.launch(EXPORT_FILE_NAME) }, modifier = Modifier.heightIn(min = MinTouchTarget)) {
+        Text(stringResource(R.string.settings_export))
+    }
+    when (message) {
+        ExportMessage.Done -> Text(stringResource(R.string.settings_export_done))
+        ExportMessage.Failed -> Text(stringResource(R.string.error_generic))
+        null -> Unit
+    }
+}
+
+@Composable
+private fun SwitchRow(title: Int, help: Int?, checked: Boolean, onChange: (Boolean) -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
@@ -83,7 +105,7 @@ private fun SwitchRow(title: Int, help: Int, checked: Boolean, onChange: (Boolea
     ) {
         Column(Modifier.weight(1f)) {
             Text(stringResource(title), style = MaterialTheme.typography.bodyLarge)
-            Text(stringResource(help), style = MaterialTheme.typography.bodyMedium)
+            help?.let { Text(stringResource(it), style = MaterialTheme.typography.bodyMedium) }
         }
         Switch(checked = checked, onCheckedChange = null)
     }
@@ -91,11 +113,6 @@ private fun SwitchRow(title: Int, help: Int, checked: Boolean, onChange: (Boolea
 
 @Composable
 private fun RadioRow(language: VoiceLanguage, selected: Boolean, onSelect: () -> Unit) {
-    val label =
-        when (language) {
-            VoiceLanguage.EN -> R.string.settings_voice_en
-            VoiceLanguage.PCM_YO -> R.string.settings_voice_pcm_yo
-        }
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
@@ -105,6 +122,22 @@ private fun RadioRow(language: VoiceLanguage, selected: Boolean, onSelect: () ->
                 .selectable(selected = selected, role = Role.RadioButton, onClick = onSelect),
     ) {
         RadioButton(selected = selected, onClick = null)
-        Text(stringResource(label), modifier = Modifier.padding(start = 8.dp))
+        Text(stringResource(voiceLabel(language)), modifier = Modifier.padding(start = 8.dp))
     }
 }
+
+private const val EXPORT_FILE_NAME = "kpakam-records.json"
+
+private fun voiceLabel(language: VoiceLanguage): Int =
+    when (language) {
+        VoiceLanguage.AUTO -> R.string.settings_voice_auto
+        VoiceLanguage.EN -> R.string.settings_voice_en
+        VoiceLanguage.PCM_YO -> R.string.settings_voice_pcm_yo
+    }
+
+private fun voiceHelp(language: VoiceLanguage): Int =
+    when (language) {
+        VoiceLanguage.AUTO -> R.string.settings_voice_help_auto
+        VoiceLanguage.EN -> R.string.settings_voice_help_en
+        VoiceLanguage.PCM_YO -> R.string.settings_voice_help_pcm_yo
+    }

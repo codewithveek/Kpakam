@@ -19,6 +19,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -58,17 +59,25 @@ fun DraftList(state: QuickEntryUiState, viewModel: QuickEntryViewModel) {
 
 @Composable
 private fun DraftActions(state: QuickEntryUiState, speech: String, viewModel: QuickEntryViewModel) {
-    val saveLabel = if (state.phase == EntryPhase.Saving) R.string.drafts_saving else R.string.drafts_save
+    val count = state.drafts.size
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Button(
             onClick = viewModel::saveAll,
             enabled = !state.busy,
             modifier = Modifier.heightIn(min = MinTouchTarget),
-        ) { Text(stringResource(saveLabel)) }
+        ) {
+            Text(
+                if (state.phase == EntryPhase.Saving) {
+                    stringResource(R.string.drafts_saving)
+                } else {
+                    pluralStringResource(R.plurals.drafts_save_all, count, count)
+                },
+            )
+        }
         OutlinedButton(
             onClick = { viewModel.readAloud(speech) },
             modifier = Modifier.heightIn(min = MinTouchTarget),
-        ) { Text(stringResource(R.string.drafts_read_aloud)) }
+        ) { Text(stringResource(R.string.voice_read_back)) }
         TextButton(
             onClick = viewModel::discardDrafts,
             modifier = Modifier.heightIn(min = MinTouchTarget),
@@ -92,8 +101,14 @@ private fun DraftCard(item: DraftUi, lowRoute: Boolean, onEdit: () -> Unit, onRe
             Text(JournalBuilder.describe(draft, journalKindOf(draft.kind)), style = MaterialTheme.typography.bodyLarge)
             draft.customerName?.let { Text(stringResource(R.string.draft_customer, it)) }
             if (draft.kind == DraftKind.CREDIT_SALE) CreditLines(draft.totalNaira, draft.paidNaira ?: 0.0)
-            if (lowRoute || draft.confidence < QuickEntryUiState.LOW_CONFIDENCE) {
-                StatusChip(Icons.Filled.WarningAmber, stringResource(R.string.draft_low_confidence))
+            val warning =
+                when {
+                    lowRoute -> R.string.entry_low_route
+                    draft.confidence < QuickEntryUiState.LOW_CONFIDENCE -> R.string.entry_check_carefully
+                    else -> null
+                }
+            if (warning != null) {
+                StatusChip(Icons.Filled.WarningAmber, stringResource(warning))
             }
             item.error?.let { StatusChip(Icons.Filled.ErrorOutline, stringResource(ledgerErrorLabel(it))) }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -121,7 +136,7 @@ private fun CreditLines(totalNaira: Double, paidNaira: Double) {
 private fun draftSpeech(item: DraftUi): String {
     val draft = item.draft
     return stringResource(
-        R.string.draft_speech,
+        R.string.voice_speech,
         stringResource(draftKindLabel(draft.kind)),
         JournalBuilder.describe(draft, journalKindOf(draft.kind)),
         NairaFormat.plain(Kobo.fromNaira(draft.totalNaira)),

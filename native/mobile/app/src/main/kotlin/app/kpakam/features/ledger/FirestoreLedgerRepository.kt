@@ -54,6 +54,14 @@ class FirestoreLedgerRepository
                     .records()
             }
 
+        override suspend fun all(): List<Journal> {
+            val query = paths.journals().orderBy(JournalFields.OCCURRED_AT)
+
+            val snapshot = getOrNull { query.get().await() } ?: getOrNull { query.get(Source.CACHE).await() }
+
+            return snapshot?.documents.orEmpty().mapNotNull { doc -> doc.data?.let(JournalMapper::fromMap) }
+        }
+
         override suspend fun find(id: Ulid): Journal? {
             val ref = paths.journals().document(id.value)
             val cached = getOrNull { ref.get(Source.CACHE).await() }

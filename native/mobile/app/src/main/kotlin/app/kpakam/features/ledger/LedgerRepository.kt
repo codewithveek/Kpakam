@@ -31,6 +31,10 @@ interface LedgerRepository {
     /** One customer's journals, newest first. */
     fun journalsForCustomer(customerId: CustomerId): Flow<List<JournalRecord>>
 
+    /** Every journal, oldest first (for "Download my records"). */
+
+    suspend fun all(): List<Journal>
+
     /** Finds a journal by id, from the cache first. */
     suspend fun find(id: Ulid): Journal?
 

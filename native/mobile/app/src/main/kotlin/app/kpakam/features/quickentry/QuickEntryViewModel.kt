@@ -9,11 +9,11 @@ import app.kpakam.core.routing.RouteDecision
 import app.kpakam.inference.DraftOrigin
 import app.kpakam.inference.ParseOutcome
 import app.kpakam.inference.ParseService
+import app.kpakam.inference.VoiceListen
 import app.kpakam.inference.VoiceService
 import app.kpakam.inference.queue.AiJob
 import app.kpakam.inference.queue.AiJobQueue
 import app.kpakam.platform.network.ConnectivitySource
-import app.kpakam.platform.speech.TranscriptResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -165,18 +165,28 @@ class QuickEntryViewModel
         /** SPEECH_DEVICE: the transcript goes into the note, so the trader sees it before drafts are made. */
         private suspend fun listenOnDevice() {
             local.update { it.copy(phase = EntryPhase.Listening, message = null) }
-            val result = voice.listenOnDevice()
-            local.update { state ->
-                when (result) {
-                    is TranscriptResult.Heard ->
-                        state.copy(
+            val result =
+                voice.listenOnDevice(onSendingClip = {
+                    local.update { it.copy(phase = EntryPhase.Parsing, message = EntryMessage.Mixed) }
+                })
+            when (result) {
+                is VoiceListen.Transcript ->
+                    local.update {
+                        it.copy(
                             phase = EntryPhase.Idle,
                             note = result.text.take(QuickEntryUiState.MAX_NOTE_CHARS),
                             transcript = result.text,
+                            message = EntryMessage.CheckWords,
                         )
-                    TranscriptResult.NothingHeard, is TranscriptResult.Failed ->
-                        state.copy(phase = EntryPhase.Idle, message = EntryMessage.NoSpeech)
-                }
+                    }
+                VoiceListen.NothingHeard ->
+                    local.update {
+                        it.copy(
+                            phase = EntryPhase.Idle,
+                            message = EntryMessage.NoSpeech,
+                        )
+                    }
+                is VoiceListen.SentClip -> show(result.outcome, voice = true)
             }
         }
 
@@ -184,10 +194,10 @@ class QuickEntryViewModel
             val decision = recordingDecision ?: return
             recordingDecision = null
             local.update { it.copy(phase = EntryPhase.Parsing) }
-            viewModelScope.launch { show(voice.finishRecording(decision)) }
+            viewModelScope.launch { show(voice.finishRecording(decision), voice = true) }
         }
 
-        private fun show(outcome: ParseOutcome) =
+        private fun show(outcome: ParseOutcome, voice: Boolean = false) =
             local.update { state ->
                 when (outcome) {
                     is ParseOutcome.Drafts -> state.withDrafts(outcome.response, outcome.origin, jobId = null)
@@ -195,7 +205,7 @@ class QuickEntryViewModel
                         state.copy(
                             phase = EntryPhase.Idle,
                             note = "",
-                            message = EntryMessage.Queued(outcome.queueReason),
+                            message = EntryMessage.Queued(outcome.queueReason, voice),
                         )
                     is ParseOutcome.Failed -> state.copy(phase = EntryPhase.Idle, message = EntryMessage.ReadFailed)
                 }

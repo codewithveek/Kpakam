@@ -61,7 +61,7 @@ class FirestoreSettingsRepository
             val map = doc.get(SETTINGS) as? Map<*, *> ?: return UserSettings()
             return UserSettings(
                 dataSaver = map[DATA_SAVER] as? Boolean ?: false,
-                voiceLanguage = (map[VOICE_LANGUAGE] as? String)?.let(VoiceLanguage::fromWire) ?: VoiceLanguage.EN,
+                voiceLanguage = (map[VOICE_LANGUAGE] as? String)?.let(VoiceLanguage::fromWire) ?: VoiceLanguage.AUTO,
                 analyticsOptIn = map[ANALYTICS] as? Boolean ?: false,
             )
         }

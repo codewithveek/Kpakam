@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 /** The trader's settings, stored in `users/{uid}.settings`. */
 data class UserSettings(
     val dataSaver: Boolean = false,
-    val voiceLanguage: VoiceLanguage = VoiceLanguage.EN,
+    val voiceLanguage: VoiceLanguage = VoiceLanguage.AUTO,
     val analyticsOptIn: Boolean = false,
 )
 

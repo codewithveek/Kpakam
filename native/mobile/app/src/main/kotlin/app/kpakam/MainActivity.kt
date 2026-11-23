@@ -22,7 +22,7 @@ class MainActivity : ComponentActivity() {
                 if (configured) {
                     KpakamRoot()
                 } else {
-                    CenteredMessage(stringResource(R.string.setup_title) + "\n\n" + stringResource(R.string.setup_body))
+                    CenteredMessage(stringResource(R.string.setup_not_configured))
                 }
             }
         }

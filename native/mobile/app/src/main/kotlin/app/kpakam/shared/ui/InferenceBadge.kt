@@ -62,6 +62,7 @@ fun reasonLabel(reason: ReasonCode): Int =
         ReasonCode.ROUTER_FALLBACK -> R.string.reason_router_fallback
         ReasonCode.SPEECH_DEVICE -> R.string.reason_speech_device
         ReasonCode.SPEECH_CLOUD -> R.string.reason_speech_cloud
+        ReasonCode.SPEECH_MIXED -> R.string.reason_speech_mixed
     }
 
 /** The English label for a queue reason (routing.md). */

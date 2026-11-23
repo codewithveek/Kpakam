@@ -51,7 +51,7 @@ fun VoiceButton(phase: EntryPhase, onTap: () -> Unit, onDenied: () -> Unit) {
         ) {
             Icon(
                 imageVector = if (active) Icons.Filled.Stop else Icons.Filled.Mic,
-                contentDescription = stringResource(if (active) R.string.entry_mic_stop else R.string.entry_mic),
+                contentDescription = stringResource(if (active) R.string.voice_stop else R.string.voice_start),
                 modifier = Modifier.size(48.dp),
             )
         }
@@ -64,7 +64,7 @@ private fun hasMicPermission(context: Context): Boolean =
 
 private fun phaseLabel(phase: EntryPhase): Int =
     when (phase) {
-        EntryPhase.Listening -> R.string.entry_listening
-        EntryPhase.Recording -> R.string.entry_recording
-        else -> R.string.entry_mic
+        EntryPhase.Listening -> R.string.voice_listening
+        EntryPhase.Recording -> R.string.voice_tap_stop
+        else -> R.string.voice_tap_start
     }

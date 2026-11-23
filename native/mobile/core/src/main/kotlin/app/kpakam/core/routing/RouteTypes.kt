@@ -26,8 +26,9 @@ public enum class ModelState(public val wire: String) {
 /** Battery reading. [level] is 0–1. */
 public data class BatteryState(val level: Double, val charging: Boolean)
 
-/** The trader's voice language setting. */
+/** The trader's voice language setting. [AUTO] (the default) lets Kpakam work it out, even for mixed speech. */
 public enum class VoiceLanguage(public val wire: String) {
+    AUTO("auto"),
     EN("en"),
     PCM_YO("pcm_yo"),
     ;
@@ -60,6 +61,9 @@ public enum class ReasonCode {
     ROUTER_FALLBACK,
     SPEECH_DEVICE,
     SPEECH_CLOUD,
+
+    /** The on-device transcript could not be trusted (mixed languages), so the clip goes to the cloud model. */
+    SPEECH_MIXED,
 }
 
 /** Why a job waits in the queue. [RATE_LIMITED] is set by the job queue, never by the router. */

@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -43,8 +44,8 @@ fun DashboardScreen(viewModel: DashboardViewModel = hiltViewModel()) {
         TotalCard(R.string.today_expenses, state.totals.expenses)
         TotalCard(R.string.today_profit, state.totals.profit)
         TotalCard(R.string.today_collected, state.totals.debtCollected)
-        StatusChip(Icons.Filled.PhoneAndroid, stringResource(R.string.today_avoided, state.cloudCallsAvoided))
-        Text(stringResource(R.string.today_avoided_help), style = MaterialTheme.typography.bodyMedium)
+        val avoided = state.cloudCallsAvoided
+        StatusChip(Icons.Filled.PhoneAndroid, pluralStringResource(R.plurals.today_avoided, avoided, avoided))
     }
 }
 

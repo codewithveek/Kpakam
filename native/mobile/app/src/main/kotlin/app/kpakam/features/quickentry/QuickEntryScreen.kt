@@ -18,6 +18,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.liveRegion
@@ -60,7 +61,7 @@ private fun QuickEntryContent(state: QuickEntryUiState, viewModel: QuickEntryVie
             item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
         }
         state.message?.let { message -> item { MessageText(message, viewModel::dismissMessage) } }
-        state.transcript?.let { item { Text(stringResource(R.string.entry_transcript, it)) } }
+        state.transcript?.let { item { Text(stringResource(R.string.voice_transcript, it)) } }
         if (state.drafts.isNotEmpty()) item { DraftList(state, viewModel) }
         if (state.jobs.isNotEmpty()) item { PendingJobs(state.jobs, viewModel) }
     }
@@ -74,7 +75,8 @@ private fun NoteInput(state: QuickEntryUiState, onChange: (String) -> Unit, onSu
         label = { Text(stringResource(R.string.entry_label)) },
         placeholder = { Text(stringResource(R.string.entry_hint)) },
         supportingText = {
-            Text(stringResource(R.string.entry_counter, state.note.length, QuickEntryUiState.MAX_NOTE_CHARS))
+            val left = QuickEntryUiState.MAX_NOTE_CHARS - state.note.length
+            Text(pluralStringResource(R.plurals.entry_chars_left, left, left))
         },
         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         keyboardActions = KeyboardActions(onDone = { onSubmit() }),
@@ -100,16 +102,14 @@ private fun MessageText(message: EntryMessage, onDismiss: () -> Unit) {
         when (message) {
             is EntryMessage.Clarify -> stringResource(R.string.entry_clarify, message.question)
             EntryMessage.ReadFailed -> stringResource(R.string.entry_failed)
-            is EntryMessage.Queued ->
-                stringResource(
-                    R.string.entry_queued,
-                    stringResource(queuedWhen(message.queueReason)),
-                )
-            is EntryMessage.Saved -> stringResource(R.string.drafts_saved, message.count)
+            is EntryMessage.Queued -> stringResource(queuedText(message.queueReason, message.voice))
+            is EntryMessage.Saved -> pluralStringResource(R.plurals.drafts_saved, message.count, message.count)
             EntryMessage.AlreadySaved -> stringResource(R.string.drafts_duplicate)
-            EntryMessage.NoSpeech -> stringResource(R.string.entry_no_speech)
-            EntryMessage.MicDenied -> stringResource(R.string.entry_mic_denied)
-            EntryMessage.SaveFailed -> stringResource(R.string.draft_error_other)
+            EntryMessage.NoSpeech -> stringResource(R.string.voice_nothing_heard)
+            EntryMessage.CheckWords -> stringResource(R.string.voice_check_words)
+            EntryMessage.Mixed -> stringResource(R.string.voice_mixed)
+            EntryMessage.MicDenied -> stringResource(R.string.voice_mic_denied)
+            EntryMessage.SaveFailed -> stringResource(R.string.error_save_failed)
         }
     Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
         Text(
@@ -125,6 +125,9 @@ private fun MessageText(message: EntryMessage, onDismiss: () -> Unit) {
 
 private fun submitLabel(phase: EntryPhase): Int =
     if (phase == EntryPhase.Parsing) R.string.entry_working else R.string.entry_submit
+
+private fun queuedText(reason: QueueReason, voice: Boolean): Int =
+    if (voice && reason == QueueReason.OFFLINE) R.string.voice_queued else queuedWhen(reason)
 
 private fun queuedWhen(reason: QueueReason): Int =
     when (reason) {

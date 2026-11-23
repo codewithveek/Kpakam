@@ -2,6 +2,7 @@ package app.kpakam.inference.queue
 
 import app.kpakam.core.routing.AiTask
 import app.kpakam.core.routing.QueueReason
+import app.kpakam.core.routing.ReasonCode
 import app.kpakam.inference.ParseService
 import app.kpakam.inference.RunOutcome
 import app.kpakam.inference.VoiceService
@@ -52,7 +53,8 @@ class QueueDrainer
             val audio = job.audioPath
             val mime = job.audioMime
             return if (job.task == AiTask.PARSE_AUDIO.wire && audio != null && mime != null) {
-                voice.runQueued(VoiceClip(audio, mime, job.sizeBytes), job.createdAtMs)
+                val reason = ReasonCode.entries.firstOrNull { it.name == job.reason } ?: ReasonCode.SPEECH_CLOUD
+                voice.runQueued(VoiceClip(audio, mime, job.sizeBytes), reason, job.createdAtMs)
             } else {
                 parse.runQueued(job.inputText.orEmpty(), job.approved, job.createdAtMs)
             }

@@ -21,30 +21,30 @@ fun draftKindLabel(kind: DraftKind): Int =
 @StringRes
 fun journalKindLabel(kind: JournalKind): Int =
     when (kind) {
-        JournalKind.SALE -> R.string.kind_sale
-        JournalKind.CREDIT_SALE -> R.string.kind_credit_sale
-        JournalKind.REPAYMENT -> R.string.kind_repayment
-        JournalKind.EXPENSE -> R.string.kind_expense
-        JournalKind.REVERSAL -> R.string.kind_reversal
+        JournalKind.SALE -> R.string.ledger_kind_sale
+        JournalKind.CREDIT_SALE -> R.string.ledger_kind_credit_sale
+        JournalKind.REPAYMENT -> R.string.ledger_kind_repayment
+        JournalKind.EXPENSE -> R.string.ledger_kind_expense
+        JournalKind.REVERSAL -> R.string.ledger_kind_reversal
     }
 
 /** What the trader must fix for a ledger error. */
 @StringRes
 fun ledgerErrorLabel(error: LedgerError): Int =
     when (error) {
-        LedgerError.CustomerRequired -> R.string.draft_error_customer
-        LedgerError.PaidExceedsTotal -> R.string.draft_error_paid
-        LedgerError.AmountTooSmall -> R.string.draft_error_amount
-        LedgerError.AlreadyReversed -> R.string.history_already_undone
-        is LedgerError.InvariantViolated -> R.string.draft_error_other
+        LedgerError.CustomerRequired -> R.string.error_customer_required
+        LedgerError.PaidExceedsTotal -> R.string.error_paid_exceeds_total
+        LedgerError.AmountTooSmall -> R.string.error_amount_too_small
+        LedgerError.AlreadyReversed -> R.string.error_already_reversed
+        is LedgerError.InvariantViolated -> R.string.error_generic
     }
 
 /** Plain-English label for the on-device model state. */
 @StringRes
 fun modelStateLabel(state: ModelState): Int =
     when (state) {
-        ModelState.AVAILABLE -> R.string.model_available
-        ModelState.DOWNLOADABLE -> R.string.model_downloadable
-        ModelState.DOWNLOADING -> R.string.model_downloading
-        ModelState.UNAVAILABLE -> R.string.model_unavailable
+        ModelState.AVAILABLE -> R.string.phone_reading_ready
+        ModelState.DOWNLOADABLE -> R.string.phone_reading_downloadable
+        ModelState.DOWNLOADING -> R.string.phone_reading_downloading
+        ModelState.UNAVAILABLE -> R.string.phone_reading_unavailable
     }

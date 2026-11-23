@@ -1,6 +1,7 @@
 package app.kpakam.core.routing
 
 import app.kpakam.core.ContractFiles
+import app.kpakam.core.TestFixtures
 import app.kpakam.core.config.AppConfig
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
@@ -23,10 +24,11 @@ class RoutingContractTest {
     private val defaults = ContractFiles.obj("remote-config.defaults.json")
 
     @Test
-    fun `contract version is routing-v1`() {
-        assertEquals("routing-v1", cases.getValue("version").jsonPrimitive.content)
+    fun `contract version is routing-v2`() {
+        assertEquals("routing-v2", cases.getValue("version").jsonPrimitive.content)
         assertTrue(cases.getValue("text").jsonArray.isNotEmpty())
         assertTrue(cases.getValue("speech").jsonArray.isNotEmpty())
+        assertTrue(cases.getValue("speechCheck").jsonArray.isNotEmpty())
     }
 
     @TestFactory
@@ -59,6 +61,7 @@ class RoutingContractTest {
                         localSpeech = requireNotNull(ModelState.fromWire(s.str("localSpeech"))),
                         online = s.getValue("online").jsonPrimitive.boolean,
                         cloudEnabled = s.getValue("cloudEnabled").jsonPrimitive.boolean,
+                        mixedHeard = s["mixedHeard"]?.jsonPrimitive?.boolean ?: false,
                     )
                 val decision = SpeechRouter.route(signals)
                 val expected = case.getValue("expected").jsonObject
@@ -67,6 +70,21 @@ class RoutingContractTest {
                 assertEquals(expected.strOrNull("queueReason"), decision.queueReason?.name, "queueReason")
             }
         }
+
+    @TestFactory
+    fun `mixed-speech check matches every contract case`(): List<DynamicTest> {
+        val threshold = AppConfig.fromJson(defaults).routeLanguageThreshold
+        return cases.getValue("speechCheck").jsonArray.map { element ->
+            val case = element.jsonObject
+            DynamicTest.dynamicTest(case.name()) {
+                val transcript = case.str("transcript")
+                val confidence = case["confidence"]?.takeIf { it !is JsonNull }?.jsonPrimitive?.double
+                val score = TestFixtures.scorer.score(transcript)
+                val mixed = MixedSpeech.isMixedSpeech(transcript, confidence, score, threshold)
+                assertEquals(case.getValue("expectedMixed").jsonPrimitive.boolean, mixed)
+            }
+        }
+    }
 
     private fun textSignals(s: JsonObject) =
         TextRouteSignals(
