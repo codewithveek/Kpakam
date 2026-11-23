@@ -1,0 +1,61 @@
+{
+  "version": "lexicon-v1",
+  "cases": [
+    {
+      "text": "sold 3 bags of rice 45k",
+      "expectedScore": 0
+    },
+    {
+      "text": "sold 3 bags of rice 45k, Mama Bisi owes 10k",
+      "expectedScore": 0
+    },
+    {
+      "text": "bought 2 cartons of indomie for 18,500",
+      "expectedScore": 0
+    },
+    {
+      "text": "paid transport 1500",
+      "expectedScore": 0
+    },
+    {
+      "text": "Tunde paid back 5000",
+      "expectedScore": 0
+    },
+    {
+      "text": "Iya Bisi buy 2 crate egg 9k, she don pay 5k, e remain 4k",
+      "expectedScore": 0.65
+    },
+    {
+      "text": "Mama Nkechi don pay the 3k wey she dey owe",
+      "expectedScore": 1
+    },
+    {
+      "text": "I sell 4 tin of milk 2k each, oga Emeka never pay",
+      "expectedScore": 0.45
+    },
+    {
+      "text": "abeg record am, I buy fuel 3500",
+      "expectedScore": 0.67
+    },
+    {
+      "text": "mo ta ìrẹsì àpò mẹ́ta ní ẹgbẹ̀rún márùn-dínlógójì",
+      "expectedScore": 1
+    },
+    {
+      "text": "Baba Sola ra epo meji, owo re ti pe",
+      "expectedScore": 0.72
+    },
+    {
+      "text": "sold garri to Mama Tola, she go pay later",
+      "expectedScore": 0.28
+    },
+    {
+      "text": "rent 20k",
+      "expectedScore": 0
+    },
+    {
+      "text": "na 3 bag rice I sell today, 45k",
+      "expectedScore": 0.29
+    }
+  ]
+}

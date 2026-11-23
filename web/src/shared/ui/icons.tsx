@@ -1,0 +1,141 @@
+import type { SVGProps } from 'react';
+
+type IconProps = Omit<SVGProps<SVGSVGElement>, 'children'>;
+
+function Icon({ children, ...props }: IconProps & { children: React.ReactNode }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="24"
+      height="24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      focusable="false"
+      {...props}
+    >
+      {children}
+    </svg>
+  );
+}
+
+export const MicIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="9" y="3" width="6" height="11" rx="3" />
+    <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+  </Icon>
+);
+export const StopIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="6" y="6" width="12" height="12" rx="2" />
+  </Icon>
+);
+export const CameraIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 8h3l2-3h6l2 3h3v11H4z" />
+    <circle cx="12" cy="13" r="3.5" />
+  </Icon>
+);
+export const PhoneIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <rect x="7" y="2" width="10" height="20" rx="2" />
+    <path d="M11 18h2" />
+  </Icon>
+);
+export const CloudIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M7 18a5 5 0 1 1 1.2-9.86A6 6 0 0 1 19.5 11 3.5 3.5 0 0 1 18 18z" />
+  </Icon>
+);
+export const ClockIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 2" />
+  </Icon>
+);
+export const OfflineIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M2 8.5a15 15 0 0 1 4-2.6M22 8.5A15 15 0 0 0 11 5M5 12.5a10 10 0 0 1 4-2.2M19 12.5a10 10 0 0 0-3-1.8M8.5 16a5 5 0 0 1 7 0M12 20h.01M3 3l18 18" />
+  </Icon>
+);
+export const OnlineIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M2 8.5a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 20h.01" />
+  </Icon>
+);
+export const SyncIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16M20 20v-4h-4" />
+  </Icon>
+);
+export const CheckIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M5 12.5 10 17l9-10" />
+  </Icon>
+);
+export const UndoIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 14 4 9l5-5" />
+    <path d="M4 9h10a6 6 0 0 1 0 12h-3" />
+  </Icon>
+);
+export const EditIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 20h4L19 9l-4-4L4 16z" />
+  </Icon>
+);
+export const SpeakerIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 9v6h4l5 4V5L8 9zM16 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11" />
+  </Icon>
+);
+export const HomeIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 11 12 4l9 7M5 10v10h14V10" />
+  </Icon>
+);
+export const ListIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+  </Icon>
+);
+export const PeopleIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="9" cy="8" r="3.5" />
+    <path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6" />
+  </Icon>
+);
+export const SettingsIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="3" />
+    <path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" />
+  </Icon>
+);
+export const ChevronLeftIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="m15 18-6-6 6-6" />
+  </Icon>
+);
+export const ChevronRightIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="m9 18 6-6-6-6" />
+  </Icon>
+);
+export const CloseIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M6 6l12 12M18 6 6 18" />
+  </Icon>
+);
+export const SendIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 12 20 4l-6 16-3-7z" />
+  </Icon>
+);
+export const SparkIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6" />
+  </Icon>
+);

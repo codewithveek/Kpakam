@@ -1,0 +1,59 @@
+# Builds on the detekt default config. Only the differences live here.
+build:
+  maxIssues: 0
+
+complexity:
+  # detekt reports at or above the threshold; the PRD limits are "at most".
+  LongMethod:
+    threshold: 41
+  CyclomaticComplexMethod:
+    threshold: 11
+  NestedBlockDepth:
+    threshold: 4
+  LongParameterList:
+    functionThreshold: 7
+    constructorThreshold: 9
+    ignoreDefaultParameters: true
+    ignoreAnnotated: ['Composable', 'Inject']
+  TooManyFunctions:
+    thresholdInFiles: 20
+    thresholdInClasses: 15
+    thresholdInInterfaces: 15
+    thresholdInObjects: 15
+    ignorePrivate: true
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated: ['Composable', 'TestFactory', 'Test']
+  TopLevelPropertyNaming:
+    constantPattern: '[A-Z][_A-Z0-9]*'
+
+style:
+  MagicNumber:
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreAnnotated: ['Composable', 'Preview']
+    excludes: ['**/test/**', '**/shared/ui/**']
+  MaxLineLength:
+    maxLineLength: 120
+  ReturnCount:
+    max: 4
+    excludeGuardClauses: true
+  UnusedPrivateMember:
+    ignoreAnnotated: ['Preview']
+  ForbiddenComment:
+    active: false
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: true
+    excludes: ['**/platform/**', '**/inference/**']
+  SwallowedException:
+    excludes: ['**/platform/**']
+    # Invalid model output is expected data, reported as a validation error.
+    ignoredExceptionTypes:
+      - InterruptedException
+      - MalformedURLException
+      - NumberFormatException
+      - ParseException
+      - SerializationException

@@ -1,0 +1,396 @@
+rules_version = '2';
+
+// ===============================================================
+// Kpakam Firestore Security Rules (PROTOTYPE - review before launch)
+// ===============================================================
+//
+// Security model
+//   - Every document lives under users/{uid}. Only the signed-in owner
+//     (request.auth.uid == uid) can touch it. Ownership comes from the
+//     path, not from a field, so no document stores a uid field.
+//   - Default deny: any path not matched below is denied.
+//   - Journals and aiEvents are append-only (create + read). No update.
+//   - Deletes are allowed only during account deletion: the user doc
+//     must already carry deletionRequestedAt (committed before the
+//     delete batch). deletionRequestedAt can never be removed or changed.
+//   - All timestamps written by the client must be serverTimestamp()
+//     (== request.time).
+//
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: users
+// Document ID: Firebase Auth uid
+// Fields:
+//   - settings: map (required, exactly these keys)
+//       - dataSaver: bool
+//       - voiceLanguage: string, one of 'en' | 'pcm_yo'
+//       - analyticsOptIn: bool
+//   - createdAt: timestamp (required, == request.time on create, immutable)
+//   - updatedAt: timestamp (required, == request.time on every write)
+//   - schemaVersion: int (required, == 1, immutable)
+//   - deletionRequestedAt: timestamp (optional, == request.time when first
+//       set; once set it can never be removed or changed)
+//
+// Collection: users/{uid}/customers
+// Document ID: ULID (the same value is used in 'receivable:<ULID>')
+// Fields:
+//   - id: string (required, == document ID, immutable)
+//   - name: string (required, 1..60 chars)
+//   - nameKey: string (required, 1..60 chars) - normalised name for sort
+//   - phone: string 0..20 chars | null (required)
+//   - balanceKobo: int (required) - cache, changed with increment()
+//   - createdAt: timestamp (required, == request.time on create, immutable)
+//   - updatedAt: timestamp (required, == request.time on every write)
+//   - schemaVersion: int (required, == 1, immutable)
+//
+// Collection: users/{uid}/journals  (append-only, immutable)
+// Document ID: ULID
+// Fields (exactly these keys; see packages/contract/schemas/journal.schema.json):
+//   - id: string (== document ID, ULID)
+//   - idempotencyKey: string (1..80 chars)
+//   - occurredAt: string (RFC 3339 date-time with seconds and offset)
+//   - day: string (YYYY-MM-DD, Africa/Lagos day of occurredAt)
+//   - kind: string, one of sale | expense | repayment | credit_sale | reversal
+//   - description: string (0..120 chars)
+//   - customerId: string ULID | null. If set, the customer doc must exist
+//       after the batch (existsAfter).
+//   - lines: list of 2..10 maps, each exactly { account, amountKobo }
+//       - account: 'cash' | 'sales' | 'expenses' | 'receivable:<ULID>'.
+//         A receivable line must name this journal's customerId.
+//       - amountKobo: int, != 0
+//       - the amounts sum to exactly 0
+//   - reverses: string ULID when kind == 'reversal' (the original journal
+//       must exist after the batch), else null
+//   - source: map, exactly
+//       - inference: one of on_device | in_cloud | manual
+//       - reason: string (1..40 chars)
+//       - promptVersion: string (1..40 chars) | null
+//   - createdAt: timestamp (== request.time)
+//   - schemaVersion: int (== 1)
+//
+// Collection: users/{uid}/aiEvents  (append-only telemetry; NO trader text)
+// Document ID: any string
+// Fields (exactly these keys):
+//   - id: string (== document ID)
+//   - task: one of parse_text | parse_image | parse_audio | summary | insights
+//   - target: one of device | cloud | queue
+//   - reason: string (1..40 chars)
+//   - source: one of on_device | in_cloud | none
+//   - latencyMs: int (0..600000)
+//   - valid: bool
+//   - attempts: int (0..5)
+//   - escalated: bool
+//   - queuedMs: int >= 0 | null
+//   - promptVersion: string (1..40 chars) | null
+//   - createdAt: timestamp (== request.time)
+//   - schemaVersion: int (== 1)
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    // Check if the user is authenticated.
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if the signed-in user owns the users/{userId} subtree.
+    // Ownership is path-based; no document has a uid field, so the
+    // usual uidUnchanged()/uidNotModified() helpers are not needed.
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // The map has exactly these keys: no missing, no extra.
+    // (hasOnly + equal size is the same as hasAll + hasOnly, but cheaper.)
+    function hasExactKeys(data, keys) {
+      return data.size() == keys.size() && data.keys().hasOnly(keys);
+    }
+
+    // String with a length in [minLen, maxLen].
+    function isStringLen(value, minLen, maxLen) {
+      return value is string && value.size() >= minLen && value.size() <= maxLen;
+    }
+
+    // String with a length in [minLen, maxLen], or null.
+    function isNullableStringLen(value, minLen, maxLen) {
+      return value == null || isStringLen(value, minLen, maxLen);
+    }
+
+    // Crockford base32 ULID (26 chars, no I, L, O, U).
+    function isUlid(value) {
+      return value is string && value.matches('^[0-9A-HJKMNP-TV-Z]{26}$');
+    }
+
+    // Only fields in 'allowed' changed between resource and request.resource.
+    function onlyChanged(allowed) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(allowed);
+    }
+
+    // Path of the user doc that owns a subtree.
+    function userPath(userId) {
+      return /databases/$(database)/documents/users/$(userId);
+    }
+
+    // Account deletion has been requested (committed state).
+    // Used to gate every delete in the subtree.
+    function deletionRequested(userId) {
+      return exists(userPath(userId)) &&
+        get(userPath(userId)).data.get('deletionRequestedAt', null) is timestamp;
+    }
+
+    // ===============================================================
+    // Domain Validators (used by both create and update)
+    // ===============================================================
+
+    // --- users/{uid} ---------------------------------------------------
+
+    function isValidSettings(s) {
+      return s is map &&
+        hasExactKeys(s, ['dataSaver', 'voiceLanguage', 'analyticsOptIn']) &&
+        s.dataSaver is bool &&
+        s.voiceLanguage in ['en', 'pcm_yo'] &&
+        s.analyticsOptIn is bool;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['settings', 'createdAt', 'updatedAt', 'schemaVersion']) &&
+        data.keys().hasOnly(['settings', 'createdAt', 'updatedAt', 'schemaVersion', 'deletionRequestedAt']) &&
+        isValidSettings(data.settings) &&
+        data.createdAt is timestamp &&
+        data.updatedAt == request.time &&
+        data.schemaVersion == 1;
+    }
+
+    function isValidUserCreate(data) {
+      return isValidUser(data) &&
+        data.createdAt == request.time &&
+        // Allowed on create only as a fresh server timestamp.
+        data.get('deletionRequestedAt', request.time) == request.time;
+    }
+
+    function isValidUserUpdate(data, prev) {
+      return isValidUser(data) &&
+        data.createdAt == prev.createdAt &&
+        data.schemaVersion == prev.schemaVersion &&
+        (
+          // Already requested: must stay exactly as it was (irreversible).
+          ('deletionRequestedAt' in prev &&
+            data.get('deletionRequestedAt', null) == prev.deletionRequestedAt) ||
+          // Not yet requested: may stay absent, or be set to now.
+          (!('deletionRequestedAt' in prev) &&
+            data.get('deletionRequestedAt', request.time) == request.time)
+        );
+    }
+
+    // --- users/{uid}/customers/{customerId} ----------------------------
+
+    function isValidCustomer(data, customerId) {
+      return hasExactKeys(data, ['id', 'name', 'nameKey', 'phone', 'balanceKobo',
+                                 'createdAt', 'updatedAt', 'schemaVersion']) &&
+        data.id == customerId &&
+        isUlid(data.id) &&
+        isStringLen(data.name, 1, 60) &&
+        isStringLen(data.nameKey, 1, 60) &&
+        isNullableStringLen(data.phone, 0, 20) &&
+        data.balanceKobo is int &&
+        data.createdAt is timestamp &&
+        data.updatedAt == request.time &&
+        data.schemaVersion == 1;
+    }
+
+    function isValidCustomerCreate(data, customerId) {
+      return isValidCustomer(data, customerId) &&
+        data.createdAt == request.time;
+    }
+
+    function isValidCustomerUpdate(data, prev, customerId) {
+      return isValidCustomer(data, customerId) &&
+        onlyChanged(['name', 'nameKey', 'phone', 'balanceKobo', 'updatedAt']) &&
+        data.id == prev.id &&
+        data.createdAt == prev.createdAt &&
+        data.schemaVersion == prev.schemaVersion;
+    }
+
+    // --- users/{uid}/journals/{journalId} ------------------------------
+
+    // Rules evaluate at most 1000 expressions per request. A 10-line
+    // journal is the most expensive write, so the per-line checks are kept
+    // as small as possible (see the "most expensive journal" test).
+    //
+    // The account pattern is built once per journal:
+    //   ^(cash|sales|expenses|receivable:<customerId>)$
+    // customerId is checked to be a ULID (no regex metacharacters) before
+    // this is used, so the pattern is a strict subset of the contract's
+    //   ^(cash|sales|expenses|receivable:[0-9A-HJKMNP-TV-Z]{26})$
+    // and a receivable line can only name this journal's own customer.
+    function accountPattern(customerId) {
+      return customerId == null
+        ? '^(cash|sales|expenses)$'
+        : '^(cash|sales|expenses|receivable:' + customerId + ')$';
+    }
+
+    // One journal line: exactly { account, amountKobo }, non-zero int.
+    // size() == 2 plus reading both fields means "exactly these two keys":
+    // reading a missing field is an evaluation error, and errors deny.
+    function isValidLine(line, pattern) {
+      return line.size() == 2 &&
+        line.account.matches(pattern) &&
+        line.amountKobo is int &&
+        line.amountKobo != 0;
+    }
+
+    // Rules have no loops, so indices 0..9 are unrolled. Index i is read
+    // only when i < n (n = lines.size()); out-of-range indices are never
+    // read. The list is indexed inline (not passed to a helper per index)
+    // because each helper call with the list as an argument is costly.
+    // The sum runs only after every line is validated (short-circuit &&).
+    function isValidLinesOfSize(l, n, p) {
+      return n >= 2 &&
+        n <= 10 &&
+        isValidLine(l[0], p) &&
+        isValidLine(l[1], p) &&
+        (n < 3 || isValidLine(l[2], p)) &&
+        (n < 4 || isValidLine(l[3], p)) &&
+        (n < 5 || isValidLine(l[4], p)) &&
+        (n < 6 || isValidLine(l[5], p)) &&
+        (n < 7 || isValidLine(l[6], p)) &&
+        (n < 8 || isValidLine(l[7], p)) &&
+        (n < 9 || isValidLine(l[8], p)) &&
+        (n < 10 || isValidLine(l[9], p)) &&
+        l[0].amountKobo + l[1].amountKobo +
+          (n < 3 ? 0 : l[2].amountKobo) +
+          (n < 4 ? 0 : l[3].amountKobo) +
+          (n < 5 ? 0 : l[4].amountKobo) +
+          (n < 6 ? 0 : l[5].amountKobo) +
+          (n < 7 ? 0 : l[6].amountKobo) +
+          (n < 8 ? 0 : l[7].amountKobo) +
+          (n < 9 ? 0 : l[8].amountKobo) +
+          (n < 10 ? 0 : l[9].amountKobo) == 0;
+    }
+
+    // customerId must already be null or a ULID (checked by the caller).
+    function isValidLines(lines, customerId) {
+      return lines is list &&
+        isValidLinesOfSize(lines, lines.size(), accountPattern(customerId));
+    }
+
+    function isValidSource(s) {
+      return s is map &&
+        hasExactKeys(s, ['inference', 'reason', 'promptVersion']) &&
+        s.inference in ['on_device', 'in_cloud', 'manual'] &&
+        isStringLen(s.reason, 1, 40) &&
+        isNullableStringLen(s.promptVersion, 1, 40);
+    }
+
+    // The customer must exist once the batch commits. The client creates
+    // a new customer in the same batch as the journal.
+    function isValidJournalCustomer(userId, customerId) {
+      return customerId == null ||
+        existsAfter(/databases/$(database)/documents/users/$(userId)/customers/$(customerId));
+    }
+
+    // A reversal names an existing journal; any other kind has reverses == null.
+    function isValidReverses(userId, kind, reverses) {
+      return kind == 'reversal'
+        ? (isUlid(reverses) &&
+            existsAfter(/databases/$(database)/documents/users/$(userId)/journals/$(reverses)))
+        : reverses == null;
+    }
+
+    function isValidJournal(data, userId, journalId) {
+      return hasExactKeys(data, ['id', 'idempotencyKey', 'occurredAt', 'day', 'kind',
+                                 'description', 'customerId', 'lines', 'reverses',
+                                 'source', 'createdAt', 'schemaVersion']) &&
+        data.id == journalId &&
+        isUlid(data.id) &&
+        isStringLen(data.idempotencyKey, 1, 80) &&
+        data.occurredAt is string &&
+        // The pattern also caps the length (at most 35 chars).
+        data.occurredAt.matches('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?(Z|[+-]\\d{2}:\\d{2})$') &&
+        data.day is string &&
+        data.day.matches('^\\d{4}-\\d{2}-\\d{2}$') &&
+        data.kind in ['sale', 'expense', 'repayment', 'credit_sale', 'reversal'] &&
+        isStringLen(data.description, 0, 120) &&
+        (data.customerId == null || isUlid(data.customerId)) &&
+        isValidLines(data.lines, data.customerId) &&
+        isValidSource(data.source) &&
+        data.createdAt == request.time &&
+        data.schemaVersion == 1 &&
+        isValidReverses(userId, data.kind, data.reverses) &&
+        isValidJournalCustomer(userId, data.customerId);
+    }
+
+    // --- users/{uid}/aiEvents/{eventId} --------------------------------
+
+    // Telemetry only. The exact key list keeps trader text out.
+    function isValidAiEvent(data, eventId) {
+      return hasExactKeys(data, ['id', 'task', 'target', 'reason', 'source', 'latencyMs',
+                                 'valid', 'attempts', 'escalated', 'queuedMs',
+                                 'promptVersion', 'createdAt', 'schemaVersion']) &&
+        data.id == eventId &&
+        data.task in ['parse_text', 'parse_image', 'parse_audio', 'summary', 'insights'] &&
+        data.target in ['device', 'cloud', 'queue'] &&
+        isStringLen(data.reason, 1, 40) &&
+        data.source in ['on_device', 'in_cloud', 'none'] &&
+        data.latencyMs is int && data.latencyMs >= 0 && data.latencyMs <= 600000 &&
+        data.valid is bool &&
+        data.attempts is int && data.attempts >= 0 && data.attempts <= 5 &&
+        data.escalated is bool &&
+        (data.queuedMs == null || (data.queuedMs is int && data.queuedMs >= 0)) &&
+        isNullableStringLen(data.promptVersion, 1, 40) &&
+        data.createdAt == request.time &&
+        data.schemaVersion == 1;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{uid} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid) && isValidUserCreate(request.resource.data);
+      allow update: if isOwner(uid) && isValidUserUpdate(request.resource.data, resource.data);
+      // Last step of account deletion. Delete the subcollections first.
+      allow delete: if isOwner(uid) && resource.data.get('deletionRequestedAt', null) is timestamp;
+
+      match /customers/{customerId} {
+        // Covers: orderBy balanceKobo desc (owner reads everything here).
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) &&
+          isValidCustomerCreate(request.resource.data, customerId);
+        allow update: if isOwner(uid) &&
+          isValidCustomerUpdate(request.resource.data, resource.data, customerId);
+        allow delete: if isOwner(uid) && deletionRequested(uid);
+      }
+
+      match /journals/{journalId} {
+        // Covers: day range + orderBy occurredAt, customerId ==, reverses ==.
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) &&
+          isValidJournal(request.resource.data, uid, journalId);
+        // Journals are immutable. A mistake is fixed with a reversal.
+        allow update: if false;
+        allow delete: if isOwner(uid) && deletionRequested(uid);
+      }
+
+      match /aiEvents/{eventId} {
+        // Covers: where createdAt >= T.
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid) &&
+          isValidAiEvent(request.resource.data, eventId);
+        allow update: if false;
+        allow delete: if isOwner(uid) && deletionRequested(uid);
+      }
+    }
+
+    // Everything else is denied by default (no matching allow).
+  }
+}

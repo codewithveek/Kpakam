@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Simple placeholder launcher icon: a green ledger page with a naira bar. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path android:fillColor="#1B6B3A" android:pathData="M8,4h32a4,4 0,0 1,4 4v32a4,4 0,0 1,-4 4H8a4,4 0,0 1,-4 -4V8a4,4 0,0 1,4 -4z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M14,12h4l8,14V12h4v24h-4L18,22v14h-4z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M10,20h28v2H10zM10,26h28v2H10z" />
+</vector>

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kpakam.app/contract/draft.schema.json",
+  "title": "DraftResponse",
+  "description": "What a model returns for one trader note. The model never writes journals; domain code builds them from these drafts.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["drafts"],
+  "properties": {
+    "drafts": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 5,
+      "items": { "$ref": "#/$defs/draft" }
+    },
+    "needsClarification": {
+      "description": "A short question for the trader when the note has no usable money event. Null or absent when drafts are present.",
+      "type": ["string", "null"],
+      "maxLength": 200
+    },
+    "transcript": {
+      "description": "Voice tasks only: what the trader said, as text.",
+      "type": ["string", "null"],
+      "maxLength": 1000
+    }
+  },
+  "$defs": {
+    "draft": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "totalNaira", "confidence"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["sale", "credit_sale", "repayment", "expense"]
+        },
+        "item": { "type": ["string", "null"], "maxLength": 80 },
+        "quantity": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+        "unit": { "type": ["string", "null"], "maxLength": 30 },
+        "totalNaira": {
+          "description": "Full value of the event in naira. For credit_sale: full price. For repayment: amount repaid.",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 100000000
+        },
+        "paidNaira": {
+          "description": "credit_sale only: amount paid now (0 when nothing was paid).",
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 100000000
+        },
+        "customerName": { "type": ["string", "null"], "maxLength": 60 },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    }
+  }
+}

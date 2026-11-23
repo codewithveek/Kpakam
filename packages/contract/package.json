@@ -1,0 +1,19 @@
+{
+  "name": "@kpakam/contract",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Shared contract for the Kpakam PWA and Android app: schemas, prompts, routing rules, Remote Config defaults, golden sets.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "exports": {
+    "./*": "./*"
+  },
+  "scripts": {
+    "check": "node scripts/check-contract.mjs",
+    "score-language": "node scripts/score-language.mjs"
+  },
+  "devDependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1"
+  }
+}

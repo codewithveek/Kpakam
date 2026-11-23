@@ -1,0 +1,130 @@
+@import 'tailwindcss';
+
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('/fonts/figtree-latin-wght.woff2') format('woff2-variations');
+}
+
+/* Design tokens. Contrast of text on surfaces is at least 4.5:1 in both themes. */
+:root {
+  --color-bg: #fbfaf7;
+  --color-surface: #ffffff;
+  --color-surface-2: #f3f1ea;
+  --color-border: #e2ded2;
+  --color-text: #1c1b18;
+  --color-muted: #5f5b51;
+  --color-primary: #0f5132;
+  --color-primary-strong: #0a3d25;
+  --color-on-primary: #ffffff;
+  --color-accent: #8a5a00;
+  --color-accent-soft: #fdf1d6;
+  --color-device: #0f5132;
+  --color-device-soft: #e2f2e8;
+  --color-cloud: #1d4f91;
+  --color-cloud-soft: #e3ecf8;
+  --color-danger: #a1261b;
+  --color-danger-soft: #fbe7e4;
+  --color-focus: #c77700;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-bg: #12140f;
+    --color-surface: #1b1e18;
+    --color-surface-2: #23271f;
+    --color-border: #343a2e;
+    --color-text: #f1efe8;
+    --color-muted: #b3ae9f;
+    --color-primary: #7fd3a4;
+    --color-primary-strong: #a6e4c1;
+    --color-on-primary: #08261a;
+    --color-accent: #f2c066;
+    --color-accent-soft: #3a2f17;
+    --color-device: #7fd3a4;
+    --color-device-soft: #1d3527;
+    --color-cloud: #9cc3f5;
+    --color-cloud-soft: #1d2b40;
+    --color-danger: #ff9b8f;
+    --color-danger-soft: #3d1c18;
+    --color-focus: #f2c066;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --color-bg: #12140f;
+  --color-surface: #1b1e18;
+  --color-surface-2: #23271f;
+  --color-border: #343a2e;
+  --color-text: #f1efe8;
+  --color-muted: #b3ae9f;
+  --color-primary: #7fd3a4;
+  --color-primary-strong: #a6e4c1;
+  --color-on-primary: #08261a;
+  --color-accent: #f2c066;
+  --color-accent-soft: #3a2f17;
+  --color-device: #7fd3a4;
+  --color-device-soft: #1d3527;
+  --color-cloud: #9cc3f5;
+  --color-cloud-soft: #1d2b40;
+  --color-danger: #ff9b8f;
+  --color-danger-soft: #3d1c18;
+  --color-focus: #f2c066;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: 'Figtree', ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif;
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-2: var(--color-surface-2);
+  --color-border: var(--color-border);
+  --color-text: var(--color-text);
+  --color-muted: var(--color-muted);
+  --color-primary: var(--color-primary);
+  --color-primary-strong: var(--color-primary-strong);
+  --color-on-primary: var(--color-on-primary);
+  --color-accent: var(--color-accent);
+  --color-accent-soft: var(--color-accent-soft);
+  --color-device: var(--color-device);
+  --color-device-soft: var(--color-device-soft);
+  --color-cloud: var(--color-cloud);
+  --color-cloud-soft: var(--color-cloud-soft);
+  --color-danger: var(--color-danger);
+  --color-danger-soft: var(--color-danger-soft);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-feature-settings: 'tnum' 1;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.amount {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

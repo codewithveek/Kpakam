@@ -1,0 +1,4 @@
+{
+  "web/**/*.{ts,tsx}": ["prettier --write", "eslint --max-warnings 0 --config web/eslint.config.js"],
+  "*.{json,md,yml,yaml,css,html,mjs,js}": ["prettier --write"]
+}
