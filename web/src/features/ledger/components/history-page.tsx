@@ -22,7 +22,7 @@ export function HistoryPage() {
       <DayStrip today={today} value={day} onChange={setDay} />
       {view.entries.length > 0 && (
         <p className="amount px-1 text-[15px] text-muted" aria-live="polite">
-          {MESSAGES.ledger.daySales} <span className="font-semibold text-income">+{formatNaira(totals.sales)}</span> · {MESSAGES.ledger.daySpent}{' '}
+          {MESSAGES.ledger.daySales} <span className="font-semibold text-income">+{formatNaira(totals.sales)}</span> · {MESSAGES.ledger.dayExpenses}{' '}
           <span className="font-semibold text-text">−{formatNaira(totals.expenses)}</span>
         </p>
       )}

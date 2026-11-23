@@ -94,13 +94,13 @@
     <string name="kind_sale">Sale</string>
     <string name="kind_credit_sale">Sold on credit</string>
     <string name="kind_repayment">Customer paid back</string>
-    <string name="kind_expense">Money spent</string>
+    <string name="kind_expense">Expense</string>
 
     <!-- Saved entry kinds (history) -->
     <string name="ledger_kind_sale">Sale</string>
     <string name="ledger_kind_credit_sale">Sold on credit</string>
     <string name="ledger_kind_repayment">Paid back</string>
-    <string name="ledger_kind_expense">Spent</string>
+    <string name="ledger_kind_expense">Expense</string>
     <string name="ledger_kind_reversal">Undo</string>
 
     <!-- Where a note was read -->
@@ -139,7 +139,7 @@
     <!-- Today -->
     <string name="today_title">Today</string>
     <string name="today_sales">Sales</string>
-    <string name="today_expenses">Spent</string>
+    <string name="today_expenses">Expenses</string>
     <string name="today_profit">Profit</string>
     <string name="today_collected">Debts paid back</string>
     <string name="today_empty">No entries yet today. Tap Record to add your first sale.</string>
