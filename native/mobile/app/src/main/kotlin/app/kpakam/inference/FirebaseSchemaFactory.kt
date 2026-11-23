@@ -14,7 +14,10 @@ import kotlinx.serialization.json.jsonPrimitive
  * contract uses: local `$ref`, nullable type arrays, enums, objects, arrays, numbers, strings.
  */
 object FirebaseSchemaFactory {
-    /** Converts a JSON Schema [root] document to a Firebase AI [Schema]. Throws [IllegalArgumentException] on unknown types. */
+    /**
+     * Converts a JSON Schema [root] document to a Firebase AI [Schema].
+     * Throws [IllegalArgumentException] on an unknown type.
+     */
     fun fromJsonSchema(root: JsonObject): Schema = convert(root, root)
 
     private fun convert(node: JsonObject, root: JsonObject): Schema {

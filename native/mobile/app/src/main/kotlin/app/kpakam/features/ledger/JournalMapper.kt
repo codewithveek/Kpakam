@@ -1,5 +1,6 @@
 package app.kpakam.features.ledger
 
+import android.util.Log
 import app.kpakam.core.ids.CustomerId
 import app.kpakam.core.ids.Ulid
 import app.kpakam.core.ledger.Account
@@ -15,6 +16,8 @@ import com.google.firebase.firestore.FieldValue
 
 /** Converts journals to and from Firestore maps. The keys match the PWA exactly. */
 object JournalMapper {
+    private const val TAG = "JournalMapper"
+
     /** The document for [journal]. `createdAt` is a server timestamp. */
     fun toMap(journal: Journal): Map<String, Any?> =
         mapOf(
@@ -40,29 +43,42 @@ object JournalMapper {
             JournalFields.SCHEMA_VERSION to Journal.SCHEMA_VERSION,
         )
 
-    /** Reads a stored journal. Returns `null` for a document that does not match the contract. */
-    fun fromMap(data: Map<String, Any?>): Journal? {
-        val occurredAt = data[JournalFields.OCCURRED_AT] as? String ?: return null
-        val source = data[JournalFields.SOURCE] as? Map<*, *> ?: return null
+    /** Reads a stored journal. Returns `null` (and logs) for a document that does not match the contract. */
+    fun fromMap(data: Map<String, Any?>): Journal? =
+        try {
+            parse(data)
+        } catch (e: IllegalArgumentException) {
+            Log.w(TAG, "Skipping a journal that does not match the contract", e)
+            null
+        }
+
+    private fun parse(data: Map<String, Any?>): Journal {
+        val occurredAt = required<String>(data, JournalFields.OCCURRED_AT)
+        val source = required<Map<*, *>>(data, JournalFields.SOURCE)
         return Journal(
-            id = (data[JournalFields.ID] as? String)?.let(Ulid::parse) ?: return null,
-            idempotencyKey = data[JournalFields.IDEMPOTENCY_KEY] as? String ?: return null,
+            id = requireNotNull(Ulid.parse(required(data, JournalFields.ID))) { "bad id" },
+            idempotencyKey = required(data, JournalFields.IDEMPOTENCY_KEY),
             occurredAt = occurredAt,
             day = data[JournalFields.DAY] as? String ?: LagosTime.dayOfOccurredAt(occurredAt),
-            kind = (data[JournalFields.KIND] as? String)?.let(JournalKind::fromWire) ?: return null,
+            kind = requireNotNull(JournalKind.fromWire(required(data, JournalFields.KIND))) { "bad kind" },
             description = data[JournalFields.DESCRIPTION] as? String ?: "",
             customerId = (data[JournalFields.CUSTOMER_ID] as? String)?.let(CustomerId::parse),
-            lines = lines(data[JournalFields.LINES]) ?: return null,
+            lines = requireNotNull(lines(data[JournalFields.LINES])) { "bad lines" },
             reverses = (data[JournalFields.REVERSES] as? String)?.let(Ulid::parse),
             source =
                 JournalSource(
                     inference =
-                        (source[JournalFields.INFERENCE] as? String)?.let(InferenceSource::fromWire) ?: return null,
+                        requireNotNull(
+                            (source[JournalFields.INFERENCE] as? String)?.let(InferenceSource::fromWire),
+                        ),
                     reason = source[JournalFields.REASON] as? String ?: "",
                     promptVersion = source[JournalFields.PROMPT_VERSION] as? String,
                 ),
         )
     }
+
+    private inline fun <reified T> required(data: Map<String, Any?>, key: String): T =
+        requireNotNull(data[key] as? T) { "missing $key" }
 
     private fun lines(value: Any?): List<JournalLine>? {
         val raw = value as? List<*> ?: return null

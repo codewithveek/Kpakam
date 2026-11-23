@@ -6,8 +6,9 @@ everything after the closing `---`, trimmed.
 ## Assembly (both apps do exactly this)
 
 - **Parse:** `body(parse-v1)` + `"\n\nNote:\n<<<\n"` + `note` + `"\n>>>"`.
-  Before insertion, remove every `<<<` and `>>>` from the note, so the trader's
-  text cannot close the delimited section.
+  Before insertion, remove every `<<<` and `>>>` from the note, repeating until
+  none remain (one pass can create a new delimiter: `<<>>><` → `<<<`), so the
+  trader's text cannot close the delimited section.
 - **Retry:** the parse prompt + `"\n\nYour last JSON:\n"` + previous output
   (trimmed to 2000 chars) + `"\n\n"` + `body(parse-retry-v1)` with `{{errors}}`
   replaced by one error per line, each starting with `- `.

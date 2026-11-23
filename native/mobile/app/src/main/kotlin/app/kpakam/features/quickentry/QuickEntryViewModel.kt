@@ -79,15 +79,7 @@ class QuickEntryViewModel
                 state.copy(
                     editingIndex = null,
                     drafts =
-                        state.drafts.mapIndexed { i, item ->
-                            if (i ==
-                                index
-                            ) {
-                                item.copy(draft = draft, error = null)
-                            } else {
-                                item
-                            }
-                        },
+                        state.drafts.replaceAt(index) { it.copy(draft = draft, error = null) },
                 )
             }
 
@@ -145,15 +137,7 @@ class QuickEntryViewModel
                         state.copy(
                             phase = EntryPhase.Idle,
                             drafts =
-                                state.drafts.mapIndexed { i, d ->
-                                    if (i ==
-                                        result.index
-                                    ) {
-                                        d.copy(error = result.error)
-                                    } else {
-                                        d
-                                    }
-                                },
+                                state.drafts.replaceAt(result.index) { it.copy(error = result.error) },
                         )
                     }
                 is ConfirmResult.Failed ->
@@ -217,7 +201,11 @@ class QuickEntryViewModel
                 }
             }
 
-        private fun QuickEntryUiState.withDrafts(response: DraftResponse, origin: DraftOrigin, jobId: String?): QuickEntryUiState {
+        private fun QuickEntryUiState.withDrafts(
+            response: DraftResponse,
+            origin: DraftOrigin,
+            jobId: String?,
+        ): QuickEntryUiState {
             val requestId = jobId ?: ids.next().value
             val drafts = response.drafts.mapIndexed { index, draft -> DraftUi(ids.next(), "$requestId:$index", draft) }
             val question = response.needsClarification?.takeIf { drafts.isEmpty() }
@@ -246,6 +234,9 @@ class QuickEntryViewModel
                 editingIndex = null,
                 message = message,
             )
+
+        private fun List<DraftUi>.replaceAt(index: Int, change: (DraftUi) -> DraftUi): List<DraftUi> =
+            mapIndexed { i, item -> if (i == index) change(item) else item }
 
         private companion object {
             const val STOP_TIMEOUT_MS = 5_000L

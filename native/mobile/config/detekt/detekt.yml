@@ -8,6 +8,8 @@ complexity:
     threshold: 41
   CyclomaticComplexMethod:
     threshold: 11
+    # An exhaustive `when` that maps an enum to a label is not complex.
+    ignoreSimpleWhenEntries: true
   NestedBlockDepth:
     threshold: 4
   LongParameterList:
@@ -17,7 +19,8 @@ complexity:
     ignoreAnnotated: ['Composable', 'Inject']
   TooManyFunctions:
     thresholdInFiles: 20
-    thresholdInClasses: 15
+    # A ViewModel exposes one function per user intent.
+    thresholdInClasses: 20
     thresholdInInterfaces: 15
     thresholdInObjects: 15
     ignorePrivate: true
@@ -49,7 +52,8 @@ exceptions:
     active: true
     excludes: ['**/platform/**', '**/inference/**']
   SwallowedException:
-    excludes: ['**/platform/**']
+    # Adapters turn SDK exceptions into typed results on purpose.
+    excludes: ['**/platform/**', '**/inference/**']
     # Invalid model output is expected data, reported as a validation error.
     ignoredExceptionTypes:
       - InterruptedException
@@ -57,3 +61,5 @@ exceptions:
       - NumberFormatException
       - ParseException
       - SerializationException
+      # A Firestore cache miss is reported as an exception; it means "not cached".
+      - FirebaseFirestoreException

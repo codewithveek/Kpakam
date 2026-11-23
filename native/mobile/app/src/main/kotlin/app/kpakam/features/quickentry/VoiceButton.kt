@@ -1,6 +1,7 @@
 package app.kpakam.features.quickentry
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -40,11 +41,11 @@ fun VoiceButton(phase: EntryPhase, onTap: () -> Unit, onDenied: () -> Unit) {
     ) {
         LargeFloatingActionButton(
             onClick = {
-                if (!enabled) return@LargeFloatingActionButton
-                val granted =
-                    ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) ==
-                        PackageManager.PERMISSION_GRANTED
-                if (granted) onTap() else launcher.launch(Manifest.permission.RECORD_AUDIO)
+                when {
+                    !enabled -> Unit
+                    hasMicPermission(context) -> onTap()
+                    else -> launcher.launch(Manifest.permission.RECORD_AUDIO)
+                }
             },
             modifier = Modifier.size(96.dp),
         ) {
@@ -54,10 +55,16 @@ fun VoiceButton(phase: EntryPhase, onTap: () -> Unit, onDenied: () -> Unit) {
                 modifier = Modifier.size(48.dp),
             )
         }
-        when (phase) {
-            EntryPhase.Listening -> Text(stringResource(R.string.entry_listening))
-            EntryPhase.Recording -> Text(stringResource(R.string.entry_recording))
-            else -> Text(stringResource(R.string.entry_mic))
-        }
+        Text(stringResource(phaseLabel(phase)))
     }
 }
+
+private fun hasMicPermission(context: Context): Boolean =
+    ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
+
+private fun phaseLabel(phase: EntryPhase): Int =
+    when (phase) {
+        EntryPhase.Listening -> R.string.entry_listening
+        EntryPhase.Recording -> R.string.entry_recording
+        else -> R.string.entry_mic
+    }

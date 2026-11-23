@@ -26,52 +26,79 @@ import app.kpakam.core.draft.DraftKind
 import app.kpakam.core.ledger.JournalBuilder
 import java.math.BigDecimal
 
+/** The editable text of a draft. */
+private data class DraftFields(
+    val kind: DraftKind,
+    val item: String,
+    val total: String,
+    val paid: String,
+    val customer: String,
+) {
+    val totalNaira: Double? get() = parseNaira(total)
+
+    /** Applies the edits to [original]. Quantity and unit stay only while the item text is unchanged. */
+    fun applyTo(original: Draft): Draft {
+        val sameItem = item.trim() == original.item?.trim()
+        return original.copy(
+            kind = kind,
+            item = item.trim().ifEmpty { null },
+            totalNaira = totalNaira ?: original.totalNaira,
+            paidNaira = if (kind == DraftKind.CREDIT_SALE) parseNaira(paid) ?: 0.0 else null,
+            customerName = customer.trim().ifEmpty { null },
+            quantity = if (sameItem) original.quantity else null,
+            unit = if (sameItem) original.unit else null,
+        )
+    }
+
+    companion object {
+        fun of(draft: Draft) =
+            DraftFields(
+                kind = draft.kind,
+                item = draft.item.orEmpty(),
+                total = JournalBuilder.formatQuantity(draft.totalNaira),
+                paid = draft.paidNaira?.let(JournalBuilder::formatQuantity).orEmpty(),
+                customer = draft.customerName.orEmpty(),
+            )
+    }
+}
+
 /** Lets the trader change a draft before saving it, or fix a saved entry (saved as reversal plus new entry). */
 @Composable
 fun DraftEditorDialog(draft: Draft, onDone: (Draft) -> Unit, onDismiss: () -> Unit) {
-    var kind by remember { mutableStateOf(draft.kind) }
-    var item by remember { mutableStateOf(draft.item.orEmpty()) }
-    var total by remember { mutableStateOf(nairaText(draft.totalNaira)) }
-    var paid by remember { mutableStateOf(draft.paidNaira?.let(::nairaText).orEmpty()) }
-    var customer by remember { mutableStateOf(draft.customerName.orEmpty()) }
-    val totalValue = parseNaira(total)
+    var fields by remember { mutableStateOf(DraftFields.of(draft)) }
+    val total = fields.totalNaira
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.edit_title)) },
-        text = {
-            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                KindPicker(kind) { kind = it }
-                OutlinedTextField(
-                    item,
-                    { item = it.take(MAX_ITEM) },
-                    label = { Text(stringResource(R.string.edit_item)) },
-                )
-                MoneyField(total, R.string.edit_total) { total = it }
-                if (kind == DraftKind.CREDIT_SALE) MoneyField(paid, R.string.edit_paid) { paid = it }
-                OutlinedTextField(
-                    customer,
-                    { customer = it.take(MAX_NAME) },
-                    label = { Text(stringResource(R.string.edit_customer)) },
-                )
-            }
-        },
+        text = { EditorFields(fields) { fields = it } },
         confirmButton = {
-            TextButton(enabled = totalValue != null && totalValue > 0, onClick = {
-                onDone(
-                    draft.copy(
-                        kind = kind,
-                        item = item.trim().ifEmpty { null },
-                        totalNaira = totalValue ?: draft.totalNaira,
-                        paidNaira = if (kind == DraftKind.CREDIT_SALE) parseNaira(paid) ?: 0.0 else null,
-                        customerName = customer.trim().ifEmpty { null },
-                        quantity = if (item.trim() == draft.item?.trim()) draft.quantity else null,
-                        unit = if (item.trim() == draft.item?.trim()) draft.unit else null,
-                    ),
-                )
-            }) { Text(stringResource(R.string.edit_done)) }
+            TextButton(enabled = total != null && total > 0, onClick = { onDone(fields.applyTo(draft)) }) {
+                Text(stringResource(R.string.edit_done))
+            }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.edit_cancel)) } },
     )
+}
+
+@Composable
+private fun EditorFields(fields: DraftFields, onChange: (DraftFields) -> Unit) {
+    Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        KindPicker(fields.kind) { onChange(fields.copy(kind = it)) }
+        OutlinedTextField(
+            value = fields.item,
+            onValueChange = { onChange(fields.copy(item = it.take(MAX_ITEM))) },
+            label = { Text(stringResource(R.string.edit_item)) },
+        )
+        MoneyField(fields.total, R.string.edit_total) { onChange(fields.copy(total = it)) }
+        if (fields.kind == DraftKind.CREDIT_SALE) {
+            MoneyField(fields.paid, R.string.edit_paid) { onChange(fields.copy(paid = it)) }
+        }
+        OutlinedTextField(
+            value = fields.customer,
+            onValueChange = { onChange(fields.copy(customer = it.take(MAX_NAME))) },
+            label = { Text(stringResource(R.string.edit_customer)) },
+        )
+    }
 }
 
 @Composable
@@ -102,14 +129,10 @@ private fun MoneyField(value: String, label: Int, onChange: (String) -> Unit) {
 private const val MAX_ITEM = 80
 private const val MAX_NAME = 60
 
-private fun nairaText(naira: Double): String = JournalBuilder.formatQuantity(naira)
-
 private fun parseNaira(text: String): Double? =
     text
         .replace(",", "")
         .trim()
-        .takeIf {
-            it.isNotEmpty()
-        }?.toBigDecimalOrNull()
+        .toBigDecimalOrNull()
         ?.takeIf { it > BigDecimal.ZERO }
         ?.toDouble()

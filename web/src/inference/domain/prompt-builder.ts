@@ -28,7 +28,10 @@ export function parsePromptFile(file: string): PromptVersion {
 
 /** Removes the delimiters so trader text cannot close the note section. */
 export function sanitiseNote(note: string): string {
-  return note.replaceAll('<<<', '').replaceAll('>>>', '').trim();
+  let text = note;
+  // Repeat: one pass can create a new delimiter ("<<>>><" → "<<<").
+  while (text.includes('<<<') || text.includes('>>>')) text = text.replaceAll('<<<', '').replaceAll('>>>', '');
+  return text.trim();
 }
 
 /** Builds the parse prompt for one note. */

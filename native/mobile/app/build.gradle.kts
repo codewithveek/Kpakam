@@ -168,6 +168,11 @@ val copyContractAssets =
         outputDir.set(layout.buildDirectory.dir("generated/kpakam/assets"))
     }
 
+// The app's JVM tests read prompts and schemas straight from the contract, like :core.
+tasks.withType<Test>().configureEach {
+    systemProperty("contractDir", contractRoot.absolutePath)
+}
+
 androidComponents {
     onVariants { variant ->
         variant.sources.res?.addGeneratedSourceDirectory(

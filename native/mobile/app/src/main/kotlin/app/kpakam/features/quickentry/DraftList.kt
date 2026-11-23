@@ -52,34 +52,27 @@ fun DraftList(state: QuickEntryUiState, viewModel: QuickEntryViewModel) {
                 onRemove = { viewModel.removeDraft(index) },
             )
         }
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(
-                onClick = viewModel::saveAll,
-                enabled = !state.busy,
-                modifier = Modifier.heightIn(min = MinTouchTarget),
-            ) {
-                Text(
-                    stringResource(
-                        if (state.phase ==
-                            EntryPhase.Saving
-                        ) {
-                            R.string.drafts_saving
-                        } else {
-                            R.string.drafts_save
-                        },
-                    ),
-                )
-            }
-            OutlinedButton(
-                onClick = { viewModel.readAloud(speech) },
-                modifier = Modifier.heightIn(min = MinTouchTarget),
-            ) {
-                Text(stringResource(R.string.drafts_read_aloud))
-            }
-            TextButton(onClick = viewModel::discardDrafts, modifier = Modifier.heightIn(min = MinTouchTarget)) {
-                Text(stringResource(R.string.drafts_discard))
-            }
-        }
+        DraftActions(state, speech, viewModel)
+    }
+}
+
+@Composable
+private fun DraftActions(state: QuickEntryUiState, speech: String, viewModel: QuickEntryViewModel) {
+    val saveLabel = if (state.phase == EntryPhase.Saving) R.string.drafts_saving else R.string.drafts_save
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Button(
+            onClick = viewModel::saveAll,
+            enabled = !state.busy,
+            modifier = Modifier.heightIn(min = MinTouchTarget),
+        ) { Text(stringResource(saveLabel)) }
+        OutlinedButton(
+            onClick = { viewModel.readAloud(speech) },
+            modifier = Modifier.heightIn(min = MinTouchTarget),
+        ) { Text(stringResource(R.string.drafts_read_aloud)) }
+        TextButton(
+            onClick = viewModel::discardDrafts,
+            modifier = Modifier.heightIn(min = MinTouchTarget),
+        ) { Text(stringResource(R.string.drafts_discard)) }
     }
 }
 

@@ -84,17 +84,7 @@ private fun NoteInput(state: QuickEntryUiState, onChange: (String) -> Unit, onSu
     )
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Button(onClick = onSubmit, enabled = state.canSubmit, modifier = Modifier.heightIn(min = MinTouchTarget)) {
-            Text(
-                stringResource(
-                    if (state.phase ==
-                        EntryPhase.Parsing
-                    ) {
-                        R.string.entry_working
-                    } else {
-                        R.string.entry_submit
-                    },
-                ),
-            )
+            Text(stringResource(submitLabel(state.phase)))
         }
         if (state.note.isNotEmpty()) {
             TextButton(onClick = onClear, modifier = Modifier.heightIn(min = MinTouchTarget)) {
@@ -132,6 +122,9 @@ private fun MessageText(message: EntryMessage, onDismiss: () -> Unit) {
         }
     }
 }
+
+private fun submitLabel(phase: EntryPhase): Int =
+    if (phase == EntryPhase.Parsing) R.string.entry_working else R.string.entry_submit
 
 private fun queuedWhen(reason: QueueReason): Int =
     when (reason) {

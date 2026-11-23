@@ -11,11 +11,12 @@ object NairaFormat {
     private val locale: Locale = Locale.forLanguageTag("en-NG")
     private const val SIGN = "₦"
     private const val MINUS = "−"
+    private const val KOBO_PER_NAIRA = 100L
 
     /** Formats [kobo] with the naira sign. Whole naira show no decimals. */
     fun format(kobo: Kobo): String {
         val naira = BigDecimal.valueOf(kobo.value).abs().movePointLeft(2)
-        val pattern = if (kobo.value % 100 == 0L) "#,##0" else "#,##0.00"
+        val pattern = if (kobo.value % KOBO_PER_NAIRA == 0L) "#,##0" else "#,##0.00"
         val text = DecimalFormat(pattern, DecimalFormatSymbols.getInstance(locale)).format(naira)
         return if (kobo.value < 0) "$MINUS$SIGN$text" else "$SIGN$text"
     }

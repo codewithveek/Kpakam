@@ -51,8 +51,15 @@ characters.
 A reversal copies the original lines in the same order with each sign flipped.
 `kind = reversal`, `reverses = original.id`, `customerId = original.customerId`,
 `description = "Reversal: " + original.description`, trimmed to 120
-characters. A journal that already has a reversal cannot be reversed again
+characters. `source` is `{ inference: "manual", reason: "REVERSAL", promptVersion: null }`.
+A journal that already has a reversal cannot be reversed again
 (`ALREADY_REVERSED`); a reversal journal can itself be reversed.
+
+## Correction ("Fix")
+
+A reversal of the original plus a replacement journal, in one batch. The
+replacement keeps the original `occurredAt` and has
+`source = { inference: "manual", reason: "CORRECTION", promptVersion: null }`.
 
 ## Invariants (checked before every write)
 

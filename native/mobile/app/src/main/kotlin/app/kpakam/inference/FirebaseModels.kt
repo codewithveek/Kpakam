@@ -116,7 +116,10 @@ class FirebaseModels(private val ai: FirebaseAI, private val responseSchema: Sch
                 is FirebaseAIOnDeviceNotAvailableException -> InferenceError.DeviceUnavailable
                 is QuotaExceededException -> InferenceError.QuotaExceeded
                 is ServiceConnectionHandshakeFailedException, is RequestTimeoutException -> InferenceError.Network
-                is PromptBlockedException, is ContentBlockedException, is ResponseStoppedException -> InferenceError.Blocked
+                is PromptBlockedException,
+                is ContentBlockedException,
+                is ResponseStoppedException,
+                -> InferenceError.Blocked
                 else -> if (e.cause is IOException) InferenceError.Network else InferenceError.Unknown(e.message)
             }
 

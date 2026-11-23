@@ -75,15 +75,13 @@ class ModelRunner
                 )
             return when (val validation = validator.validate(text)) {
                 is DraftValidation.Valid -> {
-                    val source =
-                        if (ranOn ==
-                            EventSource.ON_DEVICE
-                        ) {
-                            InferenceSource.ON_DEVICE
-                        } else {
-                            InferenceSource.IN_CLOUD
-                        }
-                    val origin = DraftOrigin(source, ReasonCode.ROUTER_FALLBACK, prompts.parseVersion, Confidence.LOW)
+                    val origin =
+                        DraftOrigin(
+                            journalSource(ranOn),
+                            ReasonCode.ROUTER_FALLBACK,
+                            prompts.parseVersion,
+                            Confidence.LOW,
+                        )
                     parsed(validation.response, text, origin, trace)
                 }
                 is DraftValidation.Invalid ->
@@ -177,7 +175,11 @@ class ModelRunner
         private fun parsed(response: DraftResponse, raw: String, origin: DraftOrigin, trace: TraceBuilder) =
             RunOutcome.Parsed(response, DraftValidator.stripCodeFence(raw), origin, trace.build(valid = true))
 
-        private fun blockedReason(): QueueReason = if (signals.online) QueueReason.CLOUD_DISABLED else QueueReason.OFFLINE
+        private fun journalSource(ranOn: EventSource): InferenceSource =
+            if (ranOn == EventSource.ON_DEVICE) InferenceSource.ON_DEVICE else InferenceSource.IN_CLOUD
+
+        private fun blockedReason(): QueueReason =
+            if (signals.online) QueueReason.CLOUD_DISABLED else QueueReason.OFFLINE
 
         private class CloudJob(val request: InferenceRequest, val reason: ReasonCode, val promptVersion: String)
 

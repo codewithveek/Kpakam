@@ -11,7 +11,8 @@ class ReasonCodeContractTest {
     @Test
     fun `every reason code in the routing table exists, and no more`() {
         val table = routingDoc.substringAfter("## Reason codes").substringBefore("Queue reasons:")
-        val codes = Regex("^\\| `([A-Z_]+)` \\|", RegexOption.MULTILINE).findAll(table).map { it.groupValues[1] }.toSet()
+        val row = Regex("^\\| `([A-Z_]+)` *\\|", RegexOption.MULTILINE)
+        val codes = row.findAll(table).map { it.groupValues[1] }.toSet()
         assertEquals(codes, ReasonCode.entries.map { it.name }.toSet())
     }
 

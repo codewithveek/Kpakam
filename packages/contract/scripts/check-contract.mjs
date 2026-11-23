@@ -193,7 +193,7 @@ section('journal-cases.json', () => {
 function routingCodes() {
   const md = read('routing.md');
   const table = md.split('## Reason codes')[1] ?? '';
-  const reasons = new Set([...table.matchAll(/^\| `([A-Z_]+)` \|/gm)].map((m) => m[1]));
+  const reasons = new Set([...table.matchAll(/^\|\s*`([A-Z_]+)`\s*\|/gm)].map((m) => m[1]));
   const queuePara = (table.split('Queue reasons:')[1] ?? '').split(/\n\s*\n/)[0];
   const queues = new Set([...queuePara.matchAll(/`([A-Z_]+)`/g)].map((m) => m[1]));
   return { reasons, queues };

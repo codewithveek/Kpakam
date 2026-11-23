@@ -113,7 +113,7 @@ export function buildReversal(input: BuildReversalInput): Result<Journal, Ledger
     customerId: original.customerId,
     lines: original.lines.map((l) => line(l.account, negateKobo(l.amountKobo))),
     reverses: original.id,
-    source: { inference: 'manual', reason: 'MANUAL', promptVersion: null },
+    source: { inference: 'manual', reason: 'REVERSAL', promptVersion: null },
     schemaVersion: JOURNAL_SCHEMA_VERSION,
   });
 }

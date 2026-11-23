@@ -116,7 +116,7 @@ async function fixEntry(deps: LedgerServiceDeps, change: { original: Journal; co
   const reversal = await reversalOf(deps, original);
   if (!reversal.ok) return reversal;
   const customers: Resolution = { known: await deps.customers.list(), created: [] };
-  const source: JournalSource = { inference: 'manual', reason: 'MANUAL', promptVersion: null };
+  const source: JournalSource = { inference: 'manual', reason: 'CORRECTION', promptVersion: null };
   const item = { draft: corrected, journalId: newUlid(), idempotencyKey: `fix:${original.id}`, occurredAt: new Date(Date.parse(original.occurredAt)), source };
   const replacement = build(item, customers);
   if (!replacement.ok) return replacement;
