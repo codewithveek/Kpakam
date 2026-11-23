@@ -20,7 +20,7 @@ describe('Today screen (F1, F5, F6)', () => {
     await user.click(screen.getByRole('button', { name: 'Read it' }));
 
     const review = await screen.findByRole('article', { name: 'Check and save' });
-    expect(within(review).getByTestId('inference-badge')).toHaveTextContent('On device');
+    expect(within(review).getByTestId('inference-badge')).toHaveTextContent('On your phone');
     expect(within(review).getByTestId('draft')).toHaveTextContent('Mama Bisi still owes ₦10,000');
 
     await user.click(within(review).getByRole('button', { name: 'Save entry' }));

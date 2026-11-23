@@ -34,6 +34,6 @@ describe('Debt book (F3)', () => {
 
   it('explains the empty state', async () => {
     renderScreen(DebtBookPage, { services: createFakeServices().services, path: '/customers' });
-    expect(await screen.findByText('Nobody owes you money. Credit sales appear here.')).toBeInTheDocument();
+    expect(await screen.findByText('Nobody owes you money. When you sell on credit, the customer shows here.')).toBeInTheDocument();
   });
 });

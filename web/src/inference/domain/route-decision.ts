@@ -15,7 +15,8 @@ export type ReasonCode =
   | 'VALIDATION_ESCALATION'
   | 'ROUTER_FALLBACK'
   | 'SPEECH_DEVICE'
-  | 'SPEECH_CLOUD';
+  | 'SPEECH_CLOUD'
+  | 'SPEECH_MIXED';
 
 export type QueueReason = 'OFFLINE' | 'DATA_SAVER' | 'CLOUD_DISABLED' | 'RATE_LIMITED';
 export type RouteTarget = 'device' | 'cloud' | 'queue';
@@ -111,7 +112,8 @@ export function escalate(signals: Pick<RouteSignals, 'online' | 'cloudEnabled'>)
   return decide('VALIDATION_ESCALATION', { target: 'queue', queueReason: signals.online ? 'CLOUD_DISABLED' : 'OFFLINE' });
 }
 
-export type VoiceLanguage = 'en' | 'pcm_yo';
+/** `auto` (default): Kpakam works out the language, even for mixed English, Pidgin and Yoruba. */
+export type VoiceLanguage = 'auto' | 'en' | 'pcm_yo';
 export type LocalSpeechState = 'available' | 'downloadable' | 'downloading' | 'unavailable';
 
 export interface SpeechSignals {
@@ -119,6 +121,8 @@ export interface SpeechSignals {
   readonly localSpeech: LocalSpeechState;
   readonly online: boolean;
   readonly cloudEnabled: boolean;
+  /** True after the mixed-speech check failed: the phone's English-only transcript can't be trusted. */
+  readonly mixedHeard?: boolean;
 }
 
 /**
@@ -126,7 +130,25 @@ export interface SpeechSignals {
  * `device` means on-device speech recognition, then the text router.
  */
 export function routeSpeech(signals: SpeechSignals): RouteDecision {
-  if (signals.voiceLanguage === 'en' && signals.localSpeech === 'available') return decide('SPEECH_DEVICE', { target: 'device' });
-  if (signals.online && signals.cloudEnabled) return decide('SPEECH_CLOUD', { target: 'cloud' });
-  return decide('SPEECH_CLOUD', { target: 'queue', queueReason: signals.online ? 'CLOUD_DISABLED' : 'OFFLINE' });
+  const reachable = signals.online && signals.cloudEnabled;
+  const blocked = signals.online ? 'CLOUD_DISABLED' : 'OFFLINE';
+  if (signals.mixedHeard === true) {
+    return reachable ? decide('SPEECH_MIXED', { target: 'cloud' }) : decide('SPEECH_MIXED', { target: 'queue', queueReason: blocked });
+  }
+  if (signals.voiceLanguage !== 'pcm_yo' && signals.localSpeech === 'available') return decide('SPEECH_DEVICE', { target: 'device' });
+  if (reachable) return decide('SPEECH_CLOUD', { target: 'cloud' });
+  return decide('SPEECH_CLOUD', { target: 'queue', queueReason: blocked });
+}
+
+/** Below this recogniser confidence, the phone's transcript is not trusted (routing.md). */
+export const MIN_SPEECH_CONFIDENCE = 0.5;
+
+/**
+ * Mixed-speech check (routing.md, auto mode): should the recorded clip go to the cloud model
+ * instead of trusting the phone's English-only transcript?
+ */
+export function isMixedSpeech(input: { transcript: string; confidence: number | null; languageScore: number; threshold: number }): boolean {
+  if (input.transcript.trim() === '') return true;
+  if (input.languageScore > input.threshold) return true;
+  return input.confidence !== null && input.confidence < MIN_SPEECH_CONFIDENCE;
 }

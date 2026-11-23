@@ -13,6 +13,7 @@ import { StatsPanel } from './stats-panel';
 import { ToggleRow } from './toggle-row';
 
 const VOICE_OPTIONS: readonly { value: VoiceLanguage; label: string }[] = [
+  { value: 'auto', label: MESSAGES.settings.voiceAuto },
   { value: 'en', label: MESSAGES.settings.voiceEnglish },
   { value: 'pcm_yo', label: MESSAGES.settings.voicePidgin },
 ];
@@ -50,7 +51,7 @@ export function SettingsPage() {
           options={VOICE_OPTIONS}
           onChange={(voiceLanguage) => save({ voiceLanguage })}
         />
-        <p className="text-[13px] leading-snug text-muted">{MESSAGES.settings.voiceHelp}</p>
+        <p className="text-[13px] leading-snug text-muted">{MESSAGES.settings.voiceHelp[settings.voiceLanguage]}</p>
       </div>
       <SectionHeader title={S.week} />
       <StatsPanel />

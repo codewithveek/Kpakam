@@ -238,6 +238,16 @@ section('routing-cases.json', () => {
       }
     }
   }
+  if (!Array.isArray(r.speechCheck) || r.speechCheck.length === 0) fail('routing-cases.json', '"speechCheck" must be a non-empty array');
+  for (const c of r.speechCheck ?? []) {
+    n += 1;
+    const where = `routing speechCheck "${c.name}"`;
+    if (names.has(c.name)) fail(where, 'duplicate name');
+    names.add(c.name);
+    if (typeof c.transcript !== 'string') fail(where, 'transcript must be a string');
+    if (c.confidence !== null && typeof c.confidence !== 'number') fail(where, 'confidence must be a number or null');
+    if (typeof c.expectedMixed !== 'boolean') fail(where, 'expectedMixed must be a boolean');
+  }
   return `${n} cases`;
 });
 

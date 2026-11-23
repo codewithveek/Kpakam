@@ -10,6 +10,13 @@ describe('users/{uid} create', () => {
     await assertSucceeds(setDoc(doc(dbAs(env(), ALICE), userPath(ALICE)), userDoc()));
   });
 
+  it('allows voiceLanguage auto (the default: language worked out from the voice)', async () => {
+    const data = userDoc({
+      settings: { dataSaver: false, voiceLanguage: 'auto', analyticsOptIn: false },
+    });
+    await assertSucceeds(setDoc(doc(dbAs(env(), ALICE), userPath(ALICE)), data));
+  });
+
   it('allows voiceLanguage pcm_yo', async () => {
     const data = userDoc({
       settings: { dataSaver: true, voiceLanguage: 'pcm_yo', analyticsOptIn: true },

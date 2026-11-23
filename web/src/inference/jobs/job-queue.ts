@@ -34,7 +34,9 @@ async function notify(ctx: QueueContext): Promise<void> {
 
 async function toParseInput(ctx: QueueContext, input: JobInput): Promise<ParseInput> {
   if (input.type === 'text') return input;
-  return { type: input.type, mimeType: input.mimeType, base64: await ctx.deps.toBase64(input.blob) };
+  const base64 = await ctx.deps.toBase64(input.blob);
+  if (input.type === 'audio') return { type: 'audio', mimeType: input.mimeType, base64, mixedHeard: input.mixedHeard === true };
+  return { type: input.type, mimeType: input.mimeType, base64 };
 }
 
 function settle(ctx: QueueContext, change: { job: AiJob; outcome: ParseOutcome }): Promise<AiJob> {

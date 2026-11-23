@@ -6,7 +6,7 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
 
 test('journey 2: data-saver holds a receipt photo until Send now (F7, S1)', async ({ page }) => {
   await openApp(page, '/settings');
-  const toggle = page.getByRole('switch', { name: 'Data saver' });
+  const toggle = page.getByRole('switch', { name: 'Save data' });
   await toggle.click();
   await expect(toggle).toHaveAttribute('aria-checked', 'true');
 
@@ -27,7 +27,7 @@ test('journey 2: data-saver holds a receipt photo until Send now (F7, S1)', asyn
 
 test('journey 2b: typed entries still run with data-saver on (only large jobs wait)', async ({ page }) => {
   await openApp(page, '/settings');
-  await page.getByRole('switch', { name: 'Data saver' }).click();
+  await page.getByRole('switch', { name: 'Save data' }).click();
   await page.getByRole('link', { name: 'Today' }).click();
   await page.getByLabel('What happened?').fill('paid transport 1500');
   await page.getByRole('button', { name: 'Read it' }).click();

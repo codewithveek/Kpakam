@@ -32,7 +32,8 @@ export type ParseOutcome =
   | { readonly type: 'failed'; readonly decision: RouteDecision; readonly problems: readonly string[] };
 
 export type ParseInput =
-  { readonly type: 'text'; readonly text: string } | { readonly type: 'image' | 'audio'; readonly base64: string; readonly mimeType: string };
+  | { readonly type: 'text'; readonly text: string }
+  | { readonly type: 'image' | 'audio'; readonly base64: string; readonly mimeType: string; readonly mixedHeard?: boolean };
 
 export interface ParseOptions {
   readonly approved: boolean;
@@ -198,7 +199,7 @@ async function parseMedia(
   const { media, options } = input;
   const audio = media.type === 'audio';
   const decision = audio
-    ? routeSpeech({ ...env, localSpeech: 'unavailable' })
+    ? routeSpeech({ ...env, localSpeech: 'unavailable', mixedHeard: media.mixedHeard === true })
     : routeJob({ task: 'parse_image', chars: 0, languageScore: 0, approved: options.approved, ...env }, env.config);
   const promptVersion = (audio ? deps.prompts.voice : deps.prompts.receipt).id;
   const run = startRun(deps, { decision, task: audio ? 'parse_audio' : 'parse_image', promptVersion, queuedMs: options.queuedMs });

@@ -153,6 +153,22 @@ describe('parse service', () => {
     expect(calls.map((c) => c.target)).toEqual(['prefer_device']);
   });
 
+  it('sends a clip online with SPEECH_MIXED when the phone heard mixed languages', async () => {
+    const { service, calls } = setup({ cloud: [{ text: GOOD }] });
+    const outcome = await service.parse({ type: 'audio', base64: 'AA==', mimeType: 'audio/webm', mixedHeard: true }, OPTS);
+    expect(outcome.type === 'drafts' && outcome.output.reason).toBe('SPEECH_MIXED');
+    expect(calls.map((c) => c.target)).toEqual(['cloud']);
+  });
+
+  it('keeps a mixed-language clip until the network returns', async () => {
+    const { service } = setup({}, { online: false });
+    expect(await service.parse({ type: 'audio', base64: 'AA==', mimeType: 'audio/webm', mixedHeard: true }, OPTS)).toMatchObject({
+      type: 'queued',
+      queueReason: 'OFFLINE',
+      decision: { reason: 'SPEECH_MIXED' },
+    });
+  });
+
   it('queues voice clips offline', async () => {
     const { service } = setup({}, { online: false });
     expect(await service.parse({ type: 'audio', base64: 'AA==', mimeType: 'audio/webm' }, OPTS)).toMatchObject({ type: 'queued', queueReason: 'OFFLINE' });

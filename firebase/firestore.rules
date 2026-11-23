@@ -25,7 +25,7 @@ rules_version = '2';
 // Fields:
 //   - settings: map (required, exactly these keys)
 //       - dataSaver: bool
-//       - voiceLanguage: string, one of 'en' | 'pcm_yo'
+//       - voiceLanguage: string, one of 'auto' | 'en' | 'pcm_yo' ('auto' = worked out from the voice)
 //       - analyticsOptIn: bool
 //   - createdAt: timestamp (required, == request.time on create, immutable)
 //   - updatedAt: timestamp (required, == request.time on every write)
@@ -156,7 +156,7 @@ service cloud.firestore {
       return s is map &&
         hasExactKeys(s, ['dataSaver', 'voiceLanguage', 'analyticsOptIn']) &&
         s.dataSaver is bool &&
-        s.voiceLanguage in ['en', 'pcm_yo'] &&
+        s.voiceLanguage in ['auto', 'en', 'pcm_yo'] &&
         s.analyticsOptIn is bool;
     }
 

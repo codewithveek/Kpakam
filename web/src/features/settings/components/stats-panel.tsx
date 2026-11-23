@@ -15,7 +15,6 @@ export function StatsPanel() {
             {pct === null ? '—' : `${pct}%`}
           </p>
         </div>
-        <p className="pb-1 text-right text-[13px] text-muted">{MESSAGES.inference.avoided(stats.cloudCallsAvoided)}</p>
       </div>
       <div
         className="mt-3 h-2.5 overflow-hidden rounded-full bg-cloud-soft"

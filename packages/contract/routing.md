@@ -1,6 +1,6 @@
 # Routing contract
 
-Version: `routing-v1`. Both apps implement this algorithm and run every case in
+Version: `routing-v2`. Both apps implement this algorithm and run every case in
 `routing-cases.json`. If the algorithm changes, change this file, the cases,
 and both implementations in the same pull request.
 
@@ -69,37 +69,62 @@ other. The response's `inferenceSource` says where it ran.
 
 ## Speech router
 
-Inputs: `voiceLanguage` (`en` \| `pcm_yo`), `localSpeech`
-(`available` \| `downloadable` \| `downloading` \| `unavailable`), `online`,
-`cloudEnabled`.
+The trader does not have to pick a language. The default, `auto`, lets Kpakam
+work it out, even when one sentence mixes English, Pidgin and Yoruba.
 
-1. `voiceLanguage == en && localSpeech == available` → device (`SPEECH_DEVICE`).
-   The transcript then goes through the text router.
-2. `online && cloudEnabled` → cloud (`SPEECH_CLOUD`). One call transcribes and
-   returns drafts.
-3. Otherwise → queue (`SPEECH_CLOUD`, `queueReason` = `OFFLINE` or
+Inputs: `voiceLanguage` (`auto` \| `en` \| `pcm_yo`, default `auto`),
+`localSpeech` (`available` \| `downloadable` \| `downloading` \| `unavailable`),
+`online`, `cloudEnabled`, `mixedHeard` (boolean, default `false`; see below).
+
+1. `mixedHeard` → `SPEECH_MIXED`. `online && cloudEnabled` → cloud. Else →
+   queue (`OFFLINE` or `CLOUD_DISABLED`); the clip is read when it can be.
+2. `voiceLanguage` is `auto` or `en`, and `localSpeech == available` → device
+   (`SPEECH_DEVICE`). The phone listens; in `auto` mode it also records the
+   clip at the same time, in case the check below fails.
+3. `online && cloudEnabled` → cloud (`SPEECH_CLOUD`). One call writes down what
+   was said (in any of the three languages, mixed or not) and returns drafts.
+4. Otherwise → queue (`SPEECH_CLOUD`, `queueReason` = `OFFLINE` or
    `CLOUD_DISABLED`). The clip is saved and sent later.
+
+### Mixed-speech check (auto mode only)
+
+The phone's speech recogniser only knows English. After it finishes, the app
+decides whether its words can be trusted. `mixedHeard` is true when any of:
+
+- the transcript is empty after trimming;
+- `languageScore(transcript) > route_language_threshold` (Pidgin or Yoruba
+  words heard);
+- the recogniser reported a confidence and it is below `0.5`.
+
+If `mixedHeard` and a clip was recorded, route again with `mixedHeard = true`
+(step 1): the clip goes to the cloud model, which understands mixed speech.
+Otherwise the transcript is used, and goes through the text router like typed
+text. In `en` mode the check is skipped (the trader chose English).
+`speechCheck` in `routing-cases.json` holds the shared test cases.
 
 ## Reason codes
 
-| Code                    | Human label (English UI)                 |
-| ----------------------- | ---------------------------------------- |
-| `IMAGE_INPUT`           | Photo needs the cloud model              |
-| `LONG_CONTEXT`          | Weekly report needs the cloud model      |
-| `DEVICE_UNAVAILABLE`    | Phone model not ready                    |
-| `LANGUAGE`              | Pidgin or Yoruba detected                |
-| `TOO_LONG`              | Long note                                |
-| `LOW_BATTERY`           | Saving your battery                      |
-| `DEFAULT_DEVICE`        | Private and free on this device          |
-| `VALIDATION_ESCALATION` | Phone model was unsure                   |
-| `ROUTER_FALLBACK`       | Safety net: phone first, cloud if needed |
-| `SPEECH_DEVICE`         | Voice heard on this device               |
-| `SPEECH_CLOUD`          | Voice sent to the cloud model            |
+Labels are plain words for traders: no "device", "cloud" or "model".
+
+| Code                    | Label shown to the trader       |
+| ----------------------- | ------------------------------- |
+| `IMAGE_INPUT`           | Photos are read online          |
+| `LONG_CONTEXT`          | Weekly report is made online    |
+| `DEVICE_UNAVAILABLE`    | Your phone can't read notes yet |
+| `LANGUAGE`              | Pidgin or Yoruba heard          |
+| `TOO_LONG`              | Long note                       |
+| `LOW_BATTERY`           | Saving your battery             |
+| `DEFAULT_DEVICE`        | Free, no data used              |
+| `VALIDATION_ESCALATION` | Checked again online            |
+| `ROUTER_FALLBACK`       | Read the best way available     |
+| `SPEECH_DEVICE`         | Heard on your phone             |
+| `SPEECH_CLOUD`          | Voice read online               |
+| `SPEECH_MIXED`          | Mixed languages heard           |
 
 Queue reasons: `OFFLINE` ("Waiting for network"), `DATA_SAVER` ("Waiting for
-you to tap Send now"), `CLOUD_DISABLED` ("Cloud paused"), `RATE_LIMITED`
-("Too many requests; will retry") — the last one is set by the job queue, not
-by the router.
+you to tap Send now"), `CLOUD_DISABLED` ("Online reading is paused"),
+`RATE_LIMITED` ("Busy, will try again soon") — the last one is set by the job
+queue, not by the router.
 
 ## Language score
 

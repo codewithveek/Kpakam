@@ -7,7 +7,7 @@ import type { JobState } from './job-state';
 export type JobInput =
   | { readonly type: 'text'; readonly text: string }
   | { readonly type: 'image'; readonly blob: Blob; readonly mimeType: string }
-  | { readonly type: 'audio'; readonly blob: Blob; readonly mimeType: string };
+  | { readonly type: 'audio'; readonly blob: Blob; readonly mimeType: string; readonly mixedHeard?: boolean };
 
 /** What a finished parse job produced, ready for the trader to review. */
 export interface JobOutput {
