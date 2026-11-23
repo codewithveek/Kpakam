@@ -1,5 +1,7 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+import { decodeTime } from 'ulid';
+import { ListGroup } from '@/shared/ui/list';
 import type { Customer } from '../domain/customer';
 import type { JournalEntry } from '../repository/journal-repository';
 import { JournalRow } from './journal-row';
@@ -17,13 +19,25 @@ function nameOf(entry: JournalEntry, customers: ReadonlyMap<string, Customer>): 
   return entry.journal.customerId === null ? null : (customers.get(entry.journal.customerId)?.name ?? null);
 }
 
+/** Entries created after this list mounted (ULIDs carry their creation time). */
+function useIsNew(): (id: string) => boolean {
+  const [mountedAt] = useState(() => Date.now());
+  return (id) => {
+    try {
+      return decodeTime(id) > mountedAt;
+    } catch {
+      return false;
+    }
+  };
+}
+
 function VirtualList({ entries, reversed, customers, label }: JournalListProps) {
   const parent = useRef<HTMLDivElement>(null);
   // TanStack Virtual returns mutable helpers; we do not use the React Compiler, so this is safe.
   // eslint-disable-next-line react-hooks/incompatible-library
-  const virtualizer = useVirtualizer({ count: entries.length, getScrollElement: () => parent.current, estimateSize: () => 104, overscan: 6 });
+  const virtualizer = useVirtualizer({ count: entries.length, getScrollElement: () => parent.current, estimateSize: () => 72, overscan: 6 });
   return (
-    <div ref={parent} className="max-h-[70vh] overflow-y-auto">
+    <div ref={parent} className="max-h-[70vh] overflow-y-auto rounded-[20px] border border-border bg-surface shadow-card">
       <ul aria-label={label} className="relative" style={{ height: virtualizer.getTotalSize() }}>
         {virtualizer.getVirtualItems().map((item) => {
           const entry = entries[item.index];
@@ -33,7 +47,7 @@ function VirtualList({ entries, reversed, customers, label }: JournalListProps) 
               key={entry.journal.id}
               ref={virtualizer.measureElement}
               data-index={item.index}
-              className="absolute inset-x-0 pb-2"
+              className="absolute inset-x-0 border-b border-border"
               style={{ transform: `translateY(${item.start}px)` }}
             >
               <JournalRow entry={entry} reversed={reversed.has(entry.journal.id)} customerName={nameOf(entry, customers)} />
@@ -45,14 +59,22 @@ function VirtualList({ entries, reversed, customers, label }: JournalListProps) 
   );
 }
 
-/** Journal entries; long lists are virtualised (TanStack Virtual). */
+/** Entries as one grouped list; long lists are virtualised (TanStack Virtual). */
 export function JournalList(props: JournalListProps) {
+  const isNew = useIsNew();
+  if (props.entries.length === 0) return null;
   if (props.entries.length > VIRTUALISE_AFTER) return <VirtualList {...props} />;
   return (
-    <ul aria-label={props.label} className="flex flex-col gap-2">
+    <ListGroup aria-label={props.label}>
       {props.entries.map((entry) => (
-        <JournalRow key={entry.journal.id} entry={entry} reversed={props.reversed.has(entry.journal.id)} customerName={nameOf(entry, props.customers)} />
+        <JournalRow
+          key={entry.journal.id}
+          entry={entry}
+          reversed={props.reversed.has(entry.journal.id)}
+          customerName={nameOf(entry, props.customers)}
+          isNew={isNew(entry.journal.id)}
+        />
       ))}
-    </ul>
+    </ListGroup>
   );
 }

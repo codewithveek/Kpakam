@@ -12,7 +12,7 @@ export function useEntryActions() {
   const undo = useCallback(
     async (journal: Journal) => {
       const result = await ledger.reverseEntry(journal);
-      showToast(result.ok ? MESSAGES.ledger.reversed : MESSAGES.errors.alreadyReversed);
+      showToast(result.ok ? MESSAGES.ledger.undone : MESSAGES.errors.alreadyReversed);
     },
     [ledger, showToast],
   );

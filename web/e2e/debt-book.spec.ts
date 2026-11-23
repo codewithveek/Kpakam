@@ -15,8 +15,10 @@ test('journey 3: Pidgin goes to the cloud, the debt book updates, and Undo rever
   await page.getByTestId('customer-row').filter({ hasText: 'Mama Bisi' }).click();
   await expect(page.getByTestId('customer-balance')).toHaveText('₦10,000');
 
-  page.once('dialog', (dialog) => void dialog.accept());
-  await page.getByRole('button', { name: 'Undo' }).click();
+  // Rows show a summary; tapping one reveals the source and the Undo / Fix actions.
+  const row = page.getByTestId('journal-row').first();
+  await row.getByRole('button', { expanded: false }).click();
+  await row.getByRole('button', { name: 'Undo' }).click();
   await expect(page.getByTestId('customer-balance')).toHaveText('₦0');
   await expect(page.getByTestId('journal-row')).toHaveCount(2);
   await expect(page.getByTestId('journal-row').filter({ hasText: 'Undone' })).toHaveCount(1);
@@ -30,4 +32,13 @@ test('journey 3b: recording a repayment by hand reduces the balance', async ({ p
   await page.getByLabel('Amount paid (₦)').fill('1000');
   await page.getByRole('button', { name: 'Record payment' }).click();
   await expect(page.getByTestId('customer-balance')).toHaveText('₦2,000');
+});
+
+test('journey 3c: the "Entry saved" toast can undo the save straight away', async ({ page }) => {
+  await openApp(page);
+  await recordNote(page, 'sold 2 crates of eggs 9000');
+  await expect(page.getByTestId('total-sales')).toHaveText('₦9,000');
+  await page.getByRole('status').getByRole('button', { name: 'Undo' }).click();
+  await expect(page.getByTestId('total-sales')).toHaveText('₦0');
+  await expect(page.getByTestId('journal-row').filter({ hasText: 'Undone' })).toHaveCount(1);
 });

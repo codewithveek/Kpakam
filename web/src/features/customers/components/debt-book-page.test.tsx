@@ -29,7 +29,7 @@ describe('Debt book (F3)', () => {
 
     await waitFor(() => expect(screen.getByTestId('total-owed')).toHaveTextContent('₦15,000'));
     const rows = screen.getAllByTestId('customer-row');
-    expect(rows.map((row) => row.textContent)).toEqual(['Mama Bisi₦10,000', 'Ada₦5,000', 'TundeAll paid']);
+    expect(rows.map((row) => row.textContent)).toEqual(['MBMama Bisiowes you₦10,000', 'AAdaowes you₦5,000', 'TTundeAll paid']);
   });
 
   it('explains the empty state', async () => {

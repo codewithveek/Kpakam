@@ -3,9 +3,15 @@ import type { DeviceModelState } from '@/inference/domain/route-decision';
 import { DEFAULT_SETTINGS, type TraderSettings } from '@/features/settings/domain/settings';
 import type { TraderIdentity } from '@/platform/firebase/auth-adapter';
 
+export interface ToastAction {
+  readonly label: string;
+  readonly run: () => void;
+}
+
 export interface Toast {
   readonly id: number;
   readonly text: string;
+  readonly action: ToastAction | null;
 }
 
 /** Small UI store. Actions are arrow properties so components can pass them around unbound. */
@@ -22,7 +28,7 @@ interface AppState {
   setDeviceModel: (state: DeviceModelState) => void;
   setDownloadProgress: (progress: number | null) => void;
   setIdentity: (identity: TraderIdentity | null) => void;
-  showToast: (text: string) => void;
+  showToast: (text: string, action?: ToastAction) => void;
   clearToast: () => void;
 }
 
@@ -40,6 +46,6 @@ export const useAppStore = create<AppState>()((set) => ({
   setDeviceModel: (deviceModel) => set({ deviceModel }),
   setDownloadProgress: (downloadProgress) => set({ downloadProgress }),
   setIdentity: (identity) => set({ identity }),
-  showToast: (text) => set({ toast: { id: (toastId += 1), text } }),
+  showToast: (text, action) => set({ toast: { id: (toastId += 1), text, action: action ?? null } }),
   clearToast: () => set({ toast: null }),
 }));

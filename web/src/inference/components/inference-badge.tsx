@@ -25,14 +25,14 @@ export function InferenceBadge({ source, reason, queueReason = null }: Inference
   const why = queueReason === null ? MESSAGES.inference.reason[reason] : MESSAGES.inference.queueReason[queueReason];
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold ${STYLE[source]}`}
+      className={`inline-flex min-h-8 max-w-full items-center gap-1.5 self-start rounded-full px-3 py-1 text-[13px] font-semibold ${STYLE[source]}`}
       data-testid="inference-badge"
       data-source={source}
       data-reason={reason}
     >
       <Icon width={16} height={16} />
       <span>{label}</span>
-      <span className="font-normal opacity-90">· {why}</span>
+      <span className="truncate font-medium opacity-90">· {why}</span>
     </span>
   );
 }

@@ -7,6 +7,7 @@ import { MESSAGES } from '@/shared/messages/en';
 import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
 import { SendIcon } from '@/shared/ui/icons';
+import { PageHeader } from '@/shared/ui/page-header';
 import { useWeekData } from '../hooks/use-week-data';
 
 const CACHE_KEY = 'kpakam.insights';
@@ -50,7 +51,7 @@ export function InsightsPage() {
   if (!remoteConfig.values().insightsEnabled) return <p>{MESSAGES.insights.disabled}</p>;
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold">{MESSAGES.insights.title}</h1>
+      <PageHeader title={MESSAGES.insights.title} />
       {held !== null && (
         <Card className="flex flex-col gap-3">
           <InferenceBadge source="queued" reason="LONG_CONTEXT" queueReason={held} />

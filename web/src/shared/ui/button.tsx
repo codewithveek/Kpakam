@@ -1,25 +1,35 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'soft';
+type Size = 'md' | 'lg' | 'icon';
 
 const VARIANTS: Readonly<Record<Variant, string>> = {
-  primary: 'bg-primary text-on-primary hover:bg-primary-strong disabled:opacity-50',
-  secondary: 'bg-surface-2 text-text border border-border hover:border-primary disabled:opacity-50',
-  ghost: 'bg-transparent text-text hover:bg-surface-2 disabled:opacity-50',
-  danger: 'bg-danger-soft text-danger border border-danger/30 hover:border-danger disabled:opacity-50',
+  primary:
+    'bg-primary text-on-primary shadow-sm hover-fine:bg-primary-strong disabled:bg-surface-2 disabled:text-muted disabled:shadow-none disabled:opacity-100',
+  secondary: 'bg-surface text-text shadow-card',
+  soft: 'bg-device-soft text-device',
+  ghost: 'bg-transparent text-text hover-fine:bg-surface-2',
+  danger: 'bg-danger-soft text-danger',
+};
+
+const SIZES: Readonly<Record<Size, string>> = {
+  md: 'min-h-12 px-4 text-[15px]',
+  lg: 'min-h-14 px-6 text-base',
+  icon: 'h-12 w-12',
 };
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   readonly variant?: Variant;
+  readonly size?: Size;
   readonly icon?: ReactNode;
 }
 
-/** Button with a 48 px minimum touch target (WCAG 2.2 AA, PRD accessibility). */
-export function Button({ variant = 'primary', icon, className = '', children, type = 'button', ...props }: ButtonProps) {
+/** Button with a 48 px minimum touch target and press feedback (scale 0.97). */
+export function Button({ variant = 'primary', size = 'md', icon, className = '', children, type = 'button', ...props }: ButtonProps) {
   return (
     <button
       type={type}
-      className={`inline-flex min-h-12 min-w-12 items-center justify-center gap-2 rounded-xl px-4 font-semibold transition-colors disabled:cursor-not-allowed ${VARIANTS[variant]} ${className}`}
+      className={`press inline-flex shrink-0 items-center justify-center gap-2 rounded-full font-semibold disabled:cursor-not-allowed disabled:opacity-40 ${SIZES[size]} ${VARIANTS[variant]} ${className}`}
       {...props}
     >
       {icon}

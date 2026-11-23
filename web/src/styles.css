@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* Hover only where a real pointer exists; touch taps must not stick in a hover state. */
+@custom-variant hover-fine (@media (hover: hover) and (pointer: fine) { &:hover });
+
 @font-face {
   font-family: 'Figtree';
   font-style: normal;
@@ -8,73 +11,69 @@
   src: url('/fonts/figtree-latin-wght.woff2') format('woff2-variations');
 }
 
-/* Design tokens. Contrast of text on surfaces is at least 4.5:1 in both themes. */
+/* Design tokens. Text on surfaces keeps at least 4.5:1 contrast in both themes. */
 :root {
-  --color-bg: #fbfaf7;
+  --color-bg: #f4f3ee;
   --color-surface: #ffffff;
-  --color-surface-2: #f3f1ea;
-  --color-border: #e2ded2;
-  --color-text: #1c1b18;
-  --color-muted: #5f5b51;
+  --color-surface-2: #eeede6;
+  --color-border: #e4e2d8;
+  --color-text: #17181a;
+  --color-muted: #5b5e57;
   --color-primary: #0f5132;
   --color-primary-strong: #0a3d25;
   --color-on-primary: #ffffff;
   --color-accent: #8a5a00;
-  --color-accent-soft: #fdf1d6;
+  --color-accent-soft: #fbf0d4;
   --color-device: #0f5132;
-  --color-device-soft: #e2f2e8;
+  --color-device-soft: #e3f1e8;
   --color-cloud: #1d4f91;
-  --color-cloud-soft: #e3ecf8;
+  --color-cloud-soft: #e4ecf8;
+  --color-income: #0d6b3c;
+  --color-expense: #a42d1f;
+  --color-credit: #8a5a00;
   --color-danger: #a1261b;
   --color-danger-soft: #fbe7e4;
   --color-focus: #c77700;
+  --hero-from: #0f5132;
+  --hero-to: #0b3a24;
+  --shadow-card: 0 1px 2px rgb(23 24 26 / 0.04), 0 6px 20px -8px rgb(23 24 26 / 0.1);
+  --shadow-float: 0 2px 4px rgb(23 24 26 / 0.05), 0 16px 40px -12px rgb(23 24 26 / 0.22);
+  /* Emil Kowalski's curves: strong ease-out for UI, iOS-like drawer curve for sheets. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --color-bg: #12140f;
-    --color-surface: #1b1e18;
-    --color-surface-2: #23271f;
-    --color-border: #343a2e;
-    --color-text: #f1efe8;
-    --color-muted: #b3ae9f;
+    --color-bg: #0f110e;
+    --color-surface: #191c17;
+    --color-surface-2: #22261f;
+    --color-border: #2e3329;
+    --color-text: #f2f1ea;
+    --color-muted: #aaa699;
     --color-primary: #7fd3a4;
     --color-primary-strong: #a6e4c1;
     --color-on-primary: #08261a;
     --color-accent: #f2c066;
-    --color-accent-soft: #3a2f17;
+    --color-accent-soft: #352b15;
     --color-device: #7fd3a4;
-    --color-device-soft: #1d3527;
+    --color-device-soft: #1b3024;
     --color-cloud: #9cc3f5;
-    --color-cloud-soft: #1d2b40;
+    --color-cloud-soft: #1b283b;
+    --color-income: #7fd3a4;
+    --color-expense: #ff9b8f;
+    --color-credit: #f2c066;
     --color-danger: #ff9b8f;
-    --color-danger-soft: #3d1c18;
+    --color-danger-soft: #3a1b17;
     --color-focus: #f2c066;
+    --hero-from: #17402b;
+    --hero-to: #0f2a1c;
+    --shadow-card: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 8px 24px -12px rgb(0 0 0 / 0.6);
+    --shadow-float: 0 1px 0 rgb(255 255 255 / 0.05) inset, 0 16px 40px -12px rgb(0 0 0 / 0.7);
     color-scheme: dark;
   }
-}
-
-:root[data-theme='dark'] {
-  --color-bg: #12140f;
-  --color-surface: #1b1e18;
-  --color-surface-2: #23271f;
-  --color-border: #343a2e;
-  --color-text: #f1efe8;
-  --color-muted: #b3ae9f;
-  --color-primary: #7fd3a4;
-  --color-primary-strong: #a6e4c1;
-  --color-on-primary: #08261a;
-  --color-accent: #f2c066;
-  --color-accent-soft: #3a2f17;
-  --color-device: #7fd3a4;
-  --color-device-soft: #1d3527;
-  --color-cloud: #9cc3f5;
-  --color-cloud-soft: #1d2b40;
-  --color-danger: #ff9b8f;
-  --color-danger-soft: #3d1c18;
-  --color-focus: #f2c066;
-  color-scheme: dark;
 }
 
 @theme inline {
@@ -94,12 +93,18 @@
   --color-device-soft: var(--color-device-soft);
   --color-cloud: var(--color-cloud);
   --color-cloud-soft: var(--color-cloud-soft);
+  --color-income: var(--color-income);
+  --color-expense: var(--color-expense);
+  --color-credit: var(--color-credit);
   --color-danger: var(--color-danger);
   --color-danger-soft: var(--color-danger-soft);
+  --shadow-card: var(--shadow-card);
+  --shadow-float: var(--shadow-float);
 }
 
 html {
   -webkit-text-size-adjust: 100%;
+  overflow-x: clip;
 }
 
 body {
@@ -117,14 +122,98 @@ body {
 
 .amount {
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
+/* Press feedback on every pressable element: the interface heard you (100–160ms). */
+.press {
+  transition:
+    transform 160ms var(--ease-out),
+    background-color 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.press:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* Enter once, never on exit or re-render: new draft cards, toasts, and newly saved rows. */
+.enter-rise {
+  transition:
+    opacity 280ms var(--ease-out),
+    transform 280ms var(--ease-out);
+  @starting-style {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+.enter-toast {
+  transition:
+    opacity 400ms ease,
+    transform 400ms ease;
+  @starting-style {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+.reveal {
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+  @starting-style {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.glass {
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+  backdrop-filter: blur(20px) saturate(180%);
+}
+
+.flash-new {
+  animation: flash-new 1.2s ease-out both;
+}
+@keyframes flash-new {
+  from {
+    background-color: var(--color-device-soft);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spinner {
+  animation: spin 700ms linear infinite;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Reduced motion: fewer, gentler animations. Keep opacity, drop movement. */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+  .press:active:not(:disabled) {
+    transform: none;
+  }
+  .enter-rise,
+  .enter-toast,
+  .reveal {
+    @starting-style {
+      transform: none;
+    }
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass {
+    background: var(--color-surface);
+    backdrop-filter: none;
   }
 }

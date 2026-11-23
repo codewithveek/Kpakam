@@ -16,8 +16,8 @@ function textOrNull(value: string): string | null {
   return value.trim() === '' ? null : value;
 }
 
-const FIELD = 'flex flex-col gap-1 text-sm font-semibold';
-const INPUT = 'min-h-12 rounded-lg border border-border bg-bg px-3 text-base font-normal';
+const FIELD = 'flex flex-col gap-1 text-[13px] font-semibold text-muted';
+const INPUT = 'min-h-12 rounded-[12px] border border-border bg-surface px-3 text-base font-medium text-text';
 
 /** Edit one draft before saving. Labels on every field; works with keyboard only. */
 export function DraftEditor({ draft, onChange }: DraftEditorProps) {

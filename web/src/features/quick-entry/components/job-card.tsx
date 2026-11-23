@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useServices } from '@/app/services';
 import type { AiJob } from '@/inference/jobs/job';
 import { estimatedSizeKb } from '@/inference/jobs/job';
@@ -18,13 +19,13 @@ function Waiting({ job }: { readonly job: AiJob }) {
   return (
     <div className="flex flex-col gap-2">
       <InferenceBadge source="queued" reason={job.decision.reason} queueReason={job.queueReason} />
-      <p className="text-muted">{inputPreview(job)}</p>
+      <p className="text-[15px] text-muted">{inputPreview(job)}</p>
       <div className="flex flex-wrap justify-end gap-2">
         <Button variant="ghost" onClick={() => void queue.cancel(job.id)}>
           {MESSAGES.settings.cancel}
         </Button>
         {held && (
-          <Button icon={<SendIcon />} onClick={() => void queue.approve(job.id)}>
+          <Button icon={<SendIcon width={18} height={18} />} onClick={() => void queue.approve(job.id)}>
             {MESSAGES.settings.sendNow} ({MESSAGES.settings.estimatedSize(estimatedSizeKb(job.input))})
           </Button>
         )}
@@ -67,14 +68,27 @@ function Clarify({ job, question }: { readonly job: AiJob; readonly question: st
   );
 }
 
+/** Brings a newly added job card into view (drafts can land below the fold on small phones). */
+function useRevealOnMount() {
+  const ref = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    const reduce = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Block body on purpose: recent Chrome returns a Promise, which must not become the effect cleanup.
+    ref.current?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
+  }, []);
+  return ref;
+}
+
 /** One AI job in any state: waiting, reading, failed, needs detail, or ready to check. */
 export function JobCard({ job }: { readonly job: AiJob }) {
+  const ref = useRevealOnMount();
   const output = job.output;
   let body;
   if (job.state === 'queued') body = <Waiting job={job} />;
   else if (job.state === 'running')
     body = (
-      <p className="text-muted" aria-live="polite">
+      <p className="flex items-center gap-3 text-[15px] font-medium text-muted" aria-live="polite">
+        <span aria-hidden="true" className="spinner h-5 w-5 rounded-full border-2 border-primary border-t-transparent" />
         {MESSAGES.quickEntry.working}
       </p>
     );
@@ -83,7 +97,7 @@ export function JobCard({ job }: { readonly job: AiJob }) {
   else if (output.response.drafts.length === 0) body = <Clarify job={job} question={output.response.needsClarification ?? MESSAGES.quickEntry.empty} />;
   else body = <DraftReview job={job} output={output} />;
   return (
-    <li className="rounded-2xl border border-border bg-surface p-4" data-testid="job" data-state={job.state}>
+    <li ref={ref} className="enter-rise scroll-mb-28 rounded-[24px] border border-border bg-surface p-4 shadow-card" data-testid="job" data-state={job.state}>
       {body}
     </li>
   );

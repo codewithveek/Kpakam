@@ -139,3 +139,54 @@ export const SparkIcon = (p: IconProps) => (
     <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6" />
   </Icon>
 );
+export const ArrowDownLeftIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M17 7 7 17M16 17H7V8" />
+  </Icon>
+);
+export const ArrowUpRightIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M7 17 17 7M8 7h9v9" />
+  </Icon>
+);
+export const HandCoinsIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="15.5" cy="6.5" r="3.5" />
+    <path d="M3 14h3l3.5 2H14a1.5 1.5 0 0 1 0 3H9M3 21h11l6-4.5a1.6 1.6 0 0 0-2-2.5L14 17" />
+  </Icon>
+);
+export const ReceiptIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h3" />
+  </Icon>
+);
+export const DotIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none" />
+  </Icon>
+);
+export const ChevronDownIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="m6 9 6 6 6-6" />
+  </Icon>
+);
+export const LeafIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M5 19c8 0 14-6 14-15C10 4 5 9 5 15zM5 19l7-7" />
+  </Icon>
+);
+export const DownloadIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
+  </Icon>
+);
+export const TrashIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
+  </Icon>
+);
+export const LinkIcon = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
+  </Icon>
+);

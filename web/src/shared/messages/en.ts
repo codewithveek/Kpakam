@@ -4,7 +4,8 @@
  */
 export const MESSAGES = {
   appName: 'Kpakam',
-  nav: { today: 'Today', history: 'History', customers: 'Who owes you', settings: 'Settings' },
+  nav: { today: 'Today', history: 'History', customers: 'Who owes you', settings: 'Settings', record: 'Record' },
+  greeting: (hour: number) => (hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'),
   status: {
     offline: 'Offline — your entries are saved on this phone',
     online: 'Online',
@@ -22,6 +23,12 @@ export const MESSAGES = {
     tooLong: 'Keep it under 280 characters.',
     empty: 'Type or say what you sold, spent, or who paid you.',
     photo: 'Receipt photo',
+    examples: [
+      { label: 'Sold…', text: 'sold ' },
+      { label: 'Bought…', text: 'bought ' },
+      { label: '…paid me', text: ' paid me ' },
+      { label: '…owes me', text: ' owes me ' },
+    ],
     queued: 'Saved. It will be read when the network returns.',
     held: 'Saved. Tap Send now when you are ready to use data.',
     clarify: 'Kpakam needs more detail',
@@ -57,6 +64,8 @@ export const MESSAGES = {
     quantity: 'Quantity',
     unit: 'Unit',
     saved: (n: number) => (n === 1 ? 'Entry saved' : `${n} entries saved`),
+    undo: 'Undo',
+    owesShort: (amount: string) => `owes ${amount}`,
     readyToReview: 'Ready to check',
   },
   inference: {
@@ -94,6 +103,10 @@ export const MESSAGES = {
     profit: 'Profit',
     debtCollected: 'Debt collected',
     noEntries: 'No entries yet today. Type your first sale above.',
+    profitToday: 'Profit today',
+    recent: 'Recent',
+    seeAll: 'See all',
+    cloudSaved: (n: number) => `${n} cloud ${n === 1 ? 'call' : 'calls'} saved this week`,
     summary: 'Summary',
   },
   ledger: {
@@ -102,6 +115,12 @@ export const MESSAGES = {
     edit: 'Fix',
     reversed: 'Undone',
     reversal: 'Undo of an earlier entry',
+    onCredit: (amount: string) => `${amount} on credit`,
+    details: 'Show details',
+    undone: 'Entry undone',
+    pickDay: 'Choose a day',
+    daySales: 'Sales',
+    daySpent: 'Spent',
     confirmUndo: 'Undo this entry? Kpakam keeps a record of both.',
     previousDay: 'Previous day',
     nextDay: 'Next day',
@@ -111,6 +130,7 @@ export const MESSAGES = {
   customers: {
     title: 'Who owes you',
     totalOwed: 'Total owed to you',
+    fromCustomers: (n: number) => `from ${n} ${n === 1 ? 'customer' : 'customers'}`,
     owes: 'owes you',
     settled: 'All paid',
     inCredit: 'You owe them',
@@ -147,6 +167,8 @@ export const MESSAGES = {
     deleteAccount: 'Delete my account and data',
     confirmDelete: 'This deletes every record. It cannot be undone. Type DELETE to confirm.',
     insights: 'Weekly report',
+    insightsHelp: 'Best sellers, money in and out, and who to follow up. Made in the cloud.',
+    sections: { data: 'Data use', voice: 'Voice', privacy: 'Privacy', week: 'This week', reports: 'Reports', account: 'Account' },
   },
   insights: {
     title: 'Weekly report',

@@ -74,22 +74,26 @@ export function DraftReview({ job, output }: { readonly job: AiJob; readonly out
       setError(ERROR_TEXT[result.error]);
       return;
     }
-    showToast(MESSAGES.drafts.saved(rows.length));
+    const saved = result.value;
+    showToast(MESSAGES.drafts.saved(rows.length), {
+      label: MESSAGES.drafts.undo,
+      run: () => void Promise.all(saved.map((journal) => ledger.reverseEntry(journal))),
+    });
     await queue.markReviewed(job.id);
   }
 
   return (
     <article className="flex flex-col gap-3" aria-label={MESSAGES.drafts.title}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="font-bold">{MESSAGES.drafts.title}</h3>
+      <div className="flex flex-col gap-2">
+        <h3 className="text-[17px] font-semibold">{MESSAGES.drafts.title}</h3>
         <InferenceBadge source={output.source} reason={output.reason} />
       </div>
       {output.response.transcript !== null && (
-        <p className="text-muted">
-          <span className="font-semibold">{MESSAGES.voice.transcript}:</span> “{output.response.transcript}”
+        <p className="rounded-[16px] bg-bg p-3 text-[15px] text-muted">
+          <span className="font-semibold text-text">{MESSAGES.voice.transcript}:</span> “{output.response.transcript}”
         </p>
       )}
-      {output.confidence === 'low' && <p className="rounded-lg bg-accent-soft p-2 text-sm text-accent">{MESSAGES.quickEntry.lowConfidence}</p>}
+      {output.confidence === 'low' && <p className="rounded-[12px] bg-accent-soft p-3 text-sm font-medium text-accent">{MESSAGES.quickEntry.lowConfidence}</p>}
       <ul className="flex flex-col gap-2">
         {rows.map((row, i) => (
           <DraftCard
@@ -106,11 +110,15 @@ export function DraftReview({ job, output }: { readonly job: AiJob; readonly out
           {error}
         </p>
       )}
-      <div className="flex flex-wrap justify-end gap-2">
-        <Button variant="ghost" icon={<SpeakerIcon />} onClick={() => speak(rows.map((r) => describeForTrader(r.draft)).join('. '))}>
-          {MESSAGES.voice.readBack}
-        </Button>
-        <Button onClick={() => void saveAll()} disabled={saving || rows.length === 0 || problems.some((p) => p !== null)}>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          icon={<SpeakerIcon />}
+          aria-label={MESSAGES.voice.readBack}
+          onClick={() => speak(rows.map((r) => describeForTrader(r.draft)).join('. '))}
+        />
+        <Button size="lg" className="flex-1" onClick={() => void saveAll()} disabled={saving || rows.length === 0 || problems.some((p) => p !== null)}>
           {MESSAGES.drafts.saveAll(rows.length)}
         </Button>
       </div>

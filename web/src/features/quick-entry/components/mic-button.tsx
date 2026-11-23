@@ -22,24 +22,31 @@ function useSecondsLeft(state: VoiceState, maxSeconds: number): number | null {
   return Math.max(0, maxSeconds - Math.floor((now - state.startedAt) / 1000));
 }
 
+function caption(state: VoiceState, secondsLeft: number | null): string {
+  if (secondsLeft !== null) return MESSAGES.voice.seconds(secondsLeft);
+  if (state.type === 'local') return MESSAGES.voice.listening;
+  return MESSAGES.voice.start;
+}
+
 /** F8: a large mic button. Tap to start, tap again to stop (works with keyboard and screen readers). */
 export function MicButton({ state, maxSeconds, onStart, onStop, disabled = false }: MicButtonProps) {
   const active = state.type === 'local' || state.type === 'recording';
   const secondsLeft = useSecondsLeft(state, maxSeconds);
   return (
-    <div className="flex flex-col items-center gap-1">
+    <div className="flex min-w-0 items-center gap-3">
       <button
         type="button"
         onClick={active ? onStop : onStart}
         disabled={disabled || state.type === 'processing'}
         aria-pressed={active}
         aria-label={active ? MESSAGES.voice.stopButton : MESSAGES.voice.startButton}
-        className={`flex h-16 w-16 items-center justify-center rounded-full shadow-sm transition-colors disabled:opacity-50 ${active ? 'bg-danger text-white' : 'bg-primary text-on-primary hover:bg-primary-strong'}`}
+        className={`press relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full disabled:opacity-40 ${active ? 'bg-danger text-white' : 'bg-device-soft text-device'}`}
       >
-        {active ? <StopIcon width={28} height={28} /> : <MicIcon width={28} height={28} />}
+        {active && <span aria-hidden="true" className="absolute inset-0 animate-ping rounded-full bg-danger/30 motion-reduce:hidden" />}
+        {active ? <StopIcon width={24} height={24} /> : <MicIcon width={26} height={26} />}
       </button>
-      <span className="text-xs text-muted" aria-live="polite">
-        {secondsLeft !== null ? MESSAGES.voice.seconds(secondsLeft) : state.type === 'local' ? MESSAGES.voice.listening : MESSAGES.voice.start}
+      <span className="truncate text-[13px] font-medium text-muted" aria-live="polite">
+        {caption(state, secondsLeft)}
       </span>
     </div>
   );
