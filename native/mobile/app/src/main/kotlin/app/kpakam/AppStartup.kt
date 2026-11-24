@@ -10,9 +10,10 @@ import app.kpakam.platform.firebase.AuthState
 import app.kpakam.platform.firebase.RemoteConfigSource
 import app.kpakam.platform.network.ConnectivitySource
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -35,9 +36,13 @@ class AppStartup
             remoteConfig.start()
             auth.start()
             drain.schedule()
+            // Once per account: a new anonymous account starts after "Delete my account and records".
             scope.launch {
-                auth.state.filterIsInstance<AuthState.SignedIn>().first()
-                settings.ensureProfile()
+                auth.state
+                    .filterIsInstance<AuthState.SignedIn>()
+                    .map { it.uid }
+                    .distinctUntilChanged()
+                    .collect { settings.ensureProfile() }
             }
             scope.launch {
                 network.state.filter { it.online }.collect { state ->

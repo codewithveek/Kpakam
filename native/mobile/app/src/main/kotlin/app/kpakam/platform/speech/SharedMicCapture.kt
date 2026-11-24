@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.util.Log
 import androidx.annotation.RequiresApi
+import app.kpakam.core.audio.Loudness
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -47,6 +48,7 @@ class AndroidSharedMic
     @Inject
     constructor(
         @param:ApplicationContext private val context: Context,
+        private val micLevel: MicLevel,
     ) : SharedMic {
         override val supported: Boolean get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
 
@@ -54,7 +56,7 @@ class AndroidSharedMic
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return null
             val file = File(context.filesDir, "voice").apply { mkdirs() }.resolve("$name.aac")
             return try {
-                PipedCapture.start(file)
+                PipedCapture.start(file, micLevel::report)
             } catch (e: IOException) {
                 Log.w(TAG, "Could not open the shared mic", e)
                 null
@@ -77,6 +79,7 @@ class PipedCapture private constructor(
     private val toRecognizer: OutputStream,
     /** The read end of the pipe, passed to the recogniser as `EXTRA_AUDIO_SOURCE`. */
     val recognizerAudio: ParcelFileDescriptor,
+    private val onLevel: (Float) -> Unit,
 ) : SharedCapture {
     private val stopRequested = AtomicBoolean(false)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -106,6 +109,7 @@ class PipedCapture private constructor(
                 val read = record.read(buffer, 0, buffer.size)
                 if (read <= 0) continue
                 bytes += read
+                onLevel(Loudness.ofPcm16(buffer, read))
                 encoder.encode(buffer, read)
                 if (recognizerOpen) recognizerOpen = writeToRecognizer(buffer, read)
             }
@@ -150,7 +154,7 @@ class PipedCapture private constructor(
 
         /** Opens the mic and starts capturing. The caller already holds RECORD_AUDIO. */
         @SuppressLint("MissingPermission")
-        fun start(file: File): PipedCapture {
+        fun start(file: File, onLevel: (Float) -> Unit): PipedCapture {
             val minBuffer =
                 AudioRecord.getMinBufferSize(
                     SAMPLE_RATE,
@@ -167,7 +171,7 @@ class PipedCapture private constructor(
                 )
             check(record.state == AudioRecord.STATE_INITIALIZED) { "AudioRecord did not initialise" }
             val (readEnd, writeEnd) = ParcelFileDescriptor.createPipe()
-            return PipedCapture(record, file, ParcelFileDescriptor.AutoCloseOutputStream(writeEnd), readEnd)
+            return PipedCapture(record, file, ParcelFileDescriptor.AutoCloseOutputStream(writeEnd), readEnd, onLevel)
                 .also { it.run() }
         }
     }

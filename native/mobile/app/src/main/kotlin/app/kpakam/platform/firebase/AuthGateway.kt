@@ -39,6 +39,22 @@ class AuthGateway
             scope.launch { signIn() }
         }
 
+        /**
+         * Deletes the signed-in account (the last step of "Delete my account and records"), then
+         * starts again with a new anonymous account. Returns `false` when the account could not be deleted.
+         */
+        suspend fun deleteAndRestart(): Boolean {
+            val user = auth.currentUser ?: return false
+            return try {
+                user.delete().await()
+                mutableState.value = AuthState.Starting
+                start()
+                true
+            } catch (e: FirebaseException) {
+                false
+            }
+        }
+
         /** Suspends until a uid exists. */
         suspend fun awaitUid(): String = state.filterIsInstance<AuthState.SignedIn>().first().uid
 

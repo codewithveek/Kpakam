@@ -1,100 +1,152 @@
 package app.kpakam.features.customers
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.People
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.kpakam.R
 import app.kpakam.core.money.Kobo
 import app.kpakam.shared.money.NairaFormat
-import app.kpakam.shared.ui.AmountText
-import app.kpakam.shared.ui.JournalRow
-import app.kpakam.shared.ui.MinTouchTarget
-import app.kpakam.shared.ui.SectionHeader
-import app.kpakam.shared.ui.SyncMark
+import app.kpakam.shared.ui.IconTile
+import app.kpakam.shared.ui.InitialsTile
+import app.kpakam.shared.ui.InkCard
+import app.kpakam.shared.ui.KCard
+import app.kpakam.shared.ui.Kpakam
+import app.kpakam.shared.ui.KpakamType
+import app.kpakam.shared.ui.PageGutter
+import app.kpakam.shared.ui.PageHeader
+import app.kpakam.shared.ui.Radii
+import app.kpakam.shared.ui.RowContent
+import app.kpakam.shared.ui.SubtitleText
+import app.kpakam.shared.ui.rowClick
 
-/** "Who owes you": customers with what they owe, largest first. */
+/** "Who owes you": the total, then every customer with what they owe, largest first. */
 @Composable
-fun CustomersScreen(onOpen: (String) -> Unit, viewModel: CustomersViewModel = hiltViewModel()) {
+fun CustomersScreen(
+    onOpen: (String) -> Unit,
+    contentPadding: PaddingValues,
+    viewModel: CustomersViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp)) {
-        item { SectionHeader(stringResource(R.string.owed_title)) }
-        item { Text(stringResource(R.string.owed_total, NairaFormat.format(state.totalOwed))) }
-        if (state.customers.isEmpty()) item { Text(stringResource(R.string.owed_empty)) }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = contentPadding,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        item { PageHeader(stringResource(R.string.owed_title), Modifier.padding(horizontal = PageGutter)) }
+        item { OwedCard(state.totalOwed, state.debtors, Modifier.padding(horizontal = PageGutter, vertical = 12.dp)) }
+        if (!state.loading && state.customers.isEmpty()) item { EmptyDebts() }
         items(state.customers, key = { it.id.value }) { customer ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = MinTouchTarget)
-                        .clickable(role = Role.Button) { onOpen(customer.id.value) }
-                        .padding(vertical = 12.dp),
-            ) {
-                Column(Modifier.weight(1f)) {
-                    Text(customer.name, style = MaterialTheme.typography.titleLarge)
-                    Text(balanceText(customer.cachedBalance))
-                }
-                if (customer.pendingSync) SyncMark(pending = true)
-            }
-            HorizontalDivider()
-        }
-    }
-}
-
-/** One customer: derived balance and their entries. */
-@Composable
-fun CustomerDetailScreen(onBack: () -> Unit, viewModel: CustomerDetailViewModel = hiltViewModel()) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp)) {
-        item {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
-                }
-                SectionHeader(state.customer?.name.orEmpty())
-            }
-        }
-        item {
-            Text(balanceText(state.balance), style = MaterialTheme.typography.bodyLarge)
-            AmountText(state.balance, large = true)
-        }
-        item { SectionHeader(stringResource(R.string.customer_history)) }
-        items(state.entries, key = { it.journal.id.value }) { record ->
-            JournalRow(record.journal, record.pendingSync, customerName = null)
-            HorizontalDivider()
+            CustomerRow(customer, Modifier.padding(horizontal = PageGutter)) { onOpen(customer.id.value) }
         }
     }
 }
 
 @Composable
-private fun balanceText(balance: Kobo): String =
-    when {
-        balance.value > 0 -> stringResource(R.string.owed_balance_owes, NairaFormat.format(balance))
-        balance.value < 0 -> stringResource(R.string.owed_balance_credit, NairaFormat.format(-balance))
-        else -> stringResource(R.string.owed_balance_clear)
+private fun OwedCard(total: Kobo, debtors: Int, modifier: Modifier) {
+    InkCard(modifier) {
+        Text(
+            stringResource(R.string.owed_total),
+            style = KpakamType.body,
+            color = Kpakam.colors.onInkMuted,
+            modifier = Modifier.semantics { heading() },
+        )
+        Text(NairaFormat.format(total), style = KpakamType.bigAmount, modifier = Modifier.padding(top = 12.dp))
+        Text(
+            pluralStringResource(R.plurals.owed_from_customers, debtors, debtors),
+            style = KpakamType.body,
+            color = Kpakam.colors.onInkMuted,
+            modifier = Modifier.padding(top = 8.dp),
+        )
     }
+}
+
+@Composable
+private fun EmptyDebts() {
+    KCard(modifier = Modifier.padding(horizontal = PageGutter), padding = PaddingValues(32.dp)) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            IconTile(Icons.Outlined.People)
+            Text(
+                stringResource(R.string.owed_empty),
+                style = KpakamType.body,
+                color = Kpakam.colors.muted,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+@Composable
+private fun CustomerRow(customer: Customer, modifier: Modifier, onClick: () -> Unit) {
+    val colors = Kpakam.colors
+    val balance = customer.cachedBalance
+    val tone = if (balance.value > 0) colors.credit else colors.muted
+    Surface(shape = Radii.row, color = colors.surface, modifier = modifier.fillMaxWidth()) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.rowClick(onClick).padding(end = 16.dp),
+        ) {
+            RowContent(
+                title = customer.name,
+                leading = { InitialsTile(customer.name) },
+                subtitle = { SubtitleText(balanceLabel(balance), tone) },
+                trailing = { if (balance.value != 0L) BalanceAmount(balance) },
+                modifier = Modifier.weight(1f),
+            )
+            Icon(
+                Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                null,
+                tint = colors.muted,
+                modifier = Modifier.size(20.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun BalanceAmount(balance: Kobo) {
+    Text(
+        NairaFormat.format(Kobo(kotlin.math.abs(balance.value))),
+        style = KpakamType.listAmount,
+        color = if (balance.value > 0) Kpakam.colors.text else Kpakam.colors.muted,
+    )
+}
+
+/** "owes you", "All paid", or "You owe them". */
+@Composable
+fun balanceLabel(balance: Kobo): String =
+    stringResource(
+        when {
+            balance.value > 0 -> R.string.owed_owes_you
+            balance.value < 0 -> R.string.owed_in_credit
+            else -> R.string.owed_balance_clear
+        },
+    )

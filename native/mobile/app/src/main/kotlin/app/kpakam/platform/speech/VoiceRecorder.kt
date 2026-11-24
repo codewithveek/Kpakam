@@ -3,6 +3,9 @@ package app.kpakam.platform.speech
 import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import app.kpakam.core.audio.Loudness
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
 import java.io.IOException
@@ -19,6 +22,11 @@ interface VoiceRecorder {
 
     /** Stops recording and returns the clip, or `null` when nothing usable was recorded. */
     fun stop(): VoiceClip?
+
+    /** Stops recording and deletes the clip (the trader tapped Cancel). */
+    fun cancel() {
+        stop()?.let { File(it.path).delete() }
+    }
 }
 
 /**
@@ -31,9 +39,25 @@ class AndroidVoiceRecorder
     @Inject
     constructor(
         @param:ApplicationContext private val context: Context,
+        private val micLevel: MicLevel,
     ) : VoiceRecorder {
         private var recorder: MediaRecorder? = null
         private var current: VoiceClip? = null
+        private val handler = Handler(Looper.getMainLooper())
+        private val meter =
+            object : Runnable {
+                override fun run() {
+                    val active = recorder ?: return
+                    val peak =
+                        try {
+                            active.maxAmplitude
+                        } catch (e: IllegalStateException) {
+                            0
+                        }
+                    micLevel.report(Loudness.ofPeak(peak))
+                    handler.postDelayed(this, METER_MS)
+                }
+            }
 
         override fun start(name: String, onLimit: () -> Unit): Boolean {
             val opus = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
@@ -52,6 +76,7 @@ class AndroidVoiceRecorder
                 created.start()
                 recorder = created
                 current = VoiceClip(file.path, if (opus) "audio/ogg" else "audio/aac", 0)
+                handler.post(meter)
                 true
             } catch (e: IOException) {
                 created.release()
@@ -65,6 +90,8 @@ class AndroidVoiceRecorder
         override fun stop(): VoiceClip? {
             val active = recorder ?: return null
             recorder = null
+            handler.removeCallbacks(meter)
+            micLevel.reset()
             val stopped =
                 try {
                     active.stop()
@@ -103,5 +130,6 @@ class AndroidVoiceRecorder
             const val SAMPLE_RATE = 16_000
             const val BIT_RATE = 16_000
             const val MAX_DURATION_MS = 30_000
+            const val METER_MS = 50L
         }
     }

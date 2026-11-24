@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Simple placeholder launcher icon: a green ledger page with a naira bar. -->
+<!-- Launcher icon: the Kpakam mark (same as ic_brand). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="48dp"
-    android:height="48dp"
-    android:viewportWidth="48"
-    android:viewportHeight="48">
-    <path android:fillColor="#1B6B3A" android:pathData="M8,4h32a4,4 0,0 1,4 4v32a4,4 0,0 1,-4 4H8a4,4 0,0 1,-4 -4V8a4,4 0,0 1,4 -4z" />
-    <path android:fillColor="#FFFFFF" android:pathData="M14,12h4l8,14V12h4v24h-4L18,22v14h-4z" />
-    <path android:fillColor="#FFFFFF" android:pathData="M10,20h28v2H10zM10,26h28v2H10z" />
+  android:width="64dp"
+  android:height="64dp"
+  android:viewportWidth="64"
+  android:viewportHeight="64">
+  <path
+    android:fillColor="#0D0D0D"
+    android:pathData="M16,0h32a16,16 0,0 1,16 16v32a16,16 0,0 1,-16 16H16A16,16 0,0 1,0 48V16A16,16 0,0 1,16 0z" />
+  <path
+    android:pathData="M14,27h36M14,37h36"
+    android:strokeWidth="3.5"
+    android:strokeColor="#9A9A94"
+    android:strokeLineCap="round" />
+  <path
+    android:pathData="M21,15v34M21,33l18,-18M26.5,28l15,21"
+    android:strokeWidth="6.5"
+    android:strokeColor="#FFFFFF"
+    android:strokeLineCap="round"
+    android:strokeLineJoin="round" />
 </vector>

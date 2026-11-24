@@ -13,13 +13,16 @@ import app.kpakam.core.routing.VoiceLanguage
 import app.kpakam.inference.queue.AiJobQueue
 import app.kpakam.platform.speech.DraftReader
 import app.kpakam.platform.speech.LocalSpeechSource
+import app.kpakam.platform.speech.MicLevel
 import app.kpakam.platform.speech.SharedMic
 import app.kpakam.platform.speech.SpeechTranscriber
 import app.kpakam.platform.speech.TranscriptResult
 import app.kpakam.platform.speech.VoiceClip
 import app.kpakam.platform.speech.VoiceRecorder
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.time.Clock
@@ -54,6 +57,7 @@ class VoiceService
         private val recorder: VoiceRecorder,
         private val sharedMic: SharedMic,
         private val reader: DraftReader,
+        private val level: MicLevel,
         private val localSpeech: LocalSpeechSource,
         private val scorer: LanguageScorer,
         private val queue: AiJobQueue,
@@ -63,19 +67,28 @@ class VoiceService
         /** Decides where the next voice entry goes (speech router). */
         suspend fun decide(): RouteDecision = SpeechRouter.route(signals.speech())
 
+        /** The live microphone loudness (0..1) for the sound wave. */
+        val micLevel: StateFlow<Float> get() = level.level
+
         /**
-         * Listens on the phone. In auto mode it records the clip at the same time and runs the
-         * mixed-speech check; [onSendingClip] runs when the clip has to be read online instead.
+         * Listens on the phone; [onPartial] gets the words live. In auto mode it records the clip at the
+         * same time and runs the mixed-speech check; [onSendingClip] runs when the clip has to be read
+         * online instead. If the trader cancels, the clip is deleted.
          */
-        suspend fun listenOnDevice(onSendingClip: () -> Unit): VoiceListen {
+        suspend fun listenOnDevice(onPartial: (String) -> Unit, onSendingClip: () -> Unit): VoiceListen {
             val auto = signals.voiceLanguage == VoiceLanguage.AUTO
             val capture = if (auto) sharedMic.open(ids.next().value) else null
             var kept: VoiceClip? = null
+            var cancelled = false
             val result =
                 try {
-                    transcriber.listen(capture)
+                    transcriber.listen(capture, onPartial)
+                } catch (e: CancellationException) {
+                    cancelled = true
+                    throw e
                 } finally {
                     kept = withContext(NonCancellable) { capture?.finish() }
+                    if (cancelled) withContext(NonCancellable) { kept?.let { delete(it.path) } }
                 }
             val heard = result as? TranscriptResult.Heard
             val text = heard?.text.orEmpty()
@@ -92,6 +105,9 @@ class VoiceService
 
         /** Stops on-device listening early. */
         fun stopListening() = transcriber.stop()
+
+        /** Stops recording and deletes the clip without sending it. */
+        fun cancelRecording() = recorder.cancel()
 
         /** Starts recording a clip for the cloud model. [onLimit] runs at 30 seconds. */
         fun startRecording(onLimit: () -> Unit): Boolean = recorder.start(ids.next().value, onLimit)

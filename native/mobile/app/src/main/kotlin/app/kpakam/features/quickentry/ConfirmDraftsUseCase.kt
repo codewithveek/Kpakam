@@ -46,9 +46,12 @@ class ConfirmDraftsUseCase
         private val clock: Clock,
     ) {
         /** Builds every journal first; saves all of them in one batch only when all are valid. */
-        suspend fun confirm(drafts: List<ConfirmableDraft>, origin: DraftOrigin): ConfirmResult {
+        suspend fun confirm(drafts: List<ConfirmableDraft>, origin: DraftOrigin): ConfirmResult =
+            confirm(drafts, JournalSource(origin.source, origin.reason.name, origin.promptVersion))
+
+        /** Saves drafts the trader typed by hand, such as "Record payment" on a customer's page. */
+        suspend fun confirm(drafts: List<ConfirmableDraft>, source: JournalSource): ConfirmResult {
             val resolver = CustomerResolver(customers, ids)
-            val source = JournalSource(origin.source, origin.reason.name, origin.promptVersion)
             val now = clock.instant()
             val journals = mutableListOf<Journal>()
             drafts.forEachIndexed { index, item ->

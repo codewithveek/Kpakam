@@ -5,6 +5,7 @@ import app.kpakam.core.ledger.Balances
 import app.kpakam.core.ledger.DayTotals
 import app.kpakam.core.ledger.Journal
 import app.kpakam.core.ledger.JournalKind
+import app.kpakam.features.ledger.JournalRecord
 import app.kpakam.features.ledger.LedgerRepository
 import app.kpakam.shared.time.LagosDates
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -14,10 +15,13 @@ import java.time.Clock
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** Today's figures (F5), derived from journal lines and updated live. */
-data class TodaySummary(val totals: DayTotals, val entries: Int, val pendingSync: Int)
+/** One day's figures (F5), derived from journal lines and updated live. [records] are newest first. */
+data class TodaySummary(val totals: DayTotals, val records: List<JournalRecord>) {
+    /** Entries on this day that an Undo reversed. */
+    val reversed: Set<Ulid> get() = records.mapNotNull { it.journal.reverses }.toSet()
+}
 
-/** Use case: today's sales, expenses, profit, and debt collected. One Firestore query, served from cache offline. */
+/** Use case: a day's sales, expenses, profit, and debt collected. One Firestore query, served from cache offline. */
 @Singleton
 class TodayTotalsUseCase
     @Inject
@@ -26,19 +30,16 @@ class TodayTotalsUseCase
         private val clock: Clock,
     ) {
         /** Live totals for today in Africa/Lagos. */
+        fun today(): Flow<TodaySummary> = day(LagosDates.today(clock))
+
+        /** Live totals and entries for [day] (`YYYY-MM-DD`, Africa/Lagos). */
         @OptIn(ExperimentalCoroutinesApi::class)
-        fun today(): Flow<TodaySummary> {
-            val day = LagosDates.today(clock)
-            return ledger.journalsBetween(day, day).mapLatest { records ->
+        fun day(day: String): Flow<TodaySummary> =
+            ledger.journalsBetween(day, day).mapLatest { records ->
                 val journals = records.map { it.journal }
                 val known = loadOriginals(journals)
-                TodaySummary(
-                    totals = Balances.dayTotals(journals) { id -> known[id] },
-                    entries = records.size,
-                    pendingSync = records.count { it.pendingSync },
-                )
+                TodaySummary(totals = Balances.dayTotals(journals) { id -> known[id] }, records = records)
             }
-        }
 
         /** Loads the originals that today's reversals point to, so an undone repayment nets out. */
         private suspend fun loadOriginals(journals: List<Journal>): Map<Ulid, Journal> {

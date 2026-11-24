@@ -23,7 +23,9 @@ import app.kpakam.platform.battery.BatteryMonitor
 import app.kpakam.platform.battery.BatterySource
 import app.kpakam.platform.files.AndroidDocumentWriter
 import app.kpakam.platform.files.DocumentWriter
+import app.kpakam.platform.firebase.AccountDeleter
 import app.kpakam.platform.firebase.ConfigSource
+import app.kpakam.platform.firebase.FirestoreAccountDeleter
 import app.kpakam.platform.firebase.RemoteConfigSource
 import app.kpakam.platform.network.ConnectivitySource
 import app.kpakam.platform.network.NetworkMonitor
@@ -74,6 +76,8 @@ abstract class BindingsModule {
     @Binds abstract fun sharedMic(impl: AndroidSharedMic): SharedMic
 
     @Binds abstract fun documentWriter(impl: AndroidDocumentWriter): DocumentWriter
+
+    @Binds abstract fun accountDeleter(impl: FirestoreAccountDeleter): AccountDeleter
 
     @Binds abstract fun drainTrigger(impl: QueueScheduler): DrainTrigger
 

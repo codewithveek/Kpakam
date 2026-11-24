@@ -2,64 +2,42 @@ package app.kpakam.features.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import app.kpakam.core.routing.ModelState
+import app.kpakam.R
 import app.kpakam.core.routing.VoiceLanguage
-import app.kpakam.core.time.LagosTime
-import app.kpakam.inference.DeviceModelSource
-import app.kpakam.inference.events.AiEventRepository
-import app.kpakam.inference.events.AiStats
+import app.kpakam.platform.firebase.AccountDeleter
 import app.kpakam.platform.network.ConnectivitySource
-import app.kpakam.platform.network.NetworkState
+import app.kpakam.shared.ui.ToastCenter
+import app.kpakam.shared.ui.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.time.Clock
 import javax.inject.Inject
 
-/** Feedback after "Download my records". */
-sealed interface ExportMessage {
-    data object Done : ExportMessage
-
-    data object Failed : ExportMessage
-}
-
-/** The settings screen state. */
+/** The settings screen state. [deleting] is true while every record is being deleted. */
 data class SettingsUiState(
     val settings: UserSettings = UserSettings(),
-    val stats: AiStats = AiStats.EMPTY,
-    val model: ModelState = ModelState.UNAVAILABLE,
-    val network: NetworkState = NetworkState(online = true, metered = false),
-    val exportMessage: ExportMessage? = null,
+    val deleting: Boolean = false,
 )
 
-/** Data control (F7), voice language (F8), the trader's own numbers (F6), and data export. */
+/** Data control (F7), voice language (F8), data export and account deletion (PRD privacy). */
 @HiltViewModel
 class SettingsViewModel
     @Inject
     constructor(
         private val repository: SettingsRepository,
         private val exporter: ExportRecordsUseCase,
-        events: AiEventRepository,
-        model: DeviceModelSource,
-        network: ConnectivitySource,
-        clock: Clock,
+        private val deleter: AccountDeleter,
+        private val network: ConnectivitySource,
+        private val toasts: ToastCenter,
     ) : ViewModel() {
-        private val exportMessage = MutableStateFlow<ExportMessage?>(null)
+        private val deleting = MutableStateFlow(false)
 
         val state: StateFlow<SettingsUiState> =
-            combine(
-                repository.settings,
-                events.statsSince(LagosTime.weekStart(clock.instant())).onStart { emit(AiStats.EMPTY) },
-                model.state,
-                network.state,
-                exportMessage,
-            ) { settings, stats, modelState, net, export -> SettingsUiState(settings, stats, modelState, net, export) }
+            combine(repository.settings, deleting) { settings, busy -> SettingsUiState(settings, busy) }
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), SettingsUiState())
 
         fun setDataSaver(on: Boolean) = save { it.copy(dataSaver = on) }
@@ -71,11 +49,25 @@ class SettingsViewModel
         /** Writes the trader's records to the document they picked. */
         fun export(uri: String) {
             viewModelScope.launch {
-                exportMessage.value = if (exporter.export(uri)) ExportMessage.Done else ExportMessage.Failed
+                val done = exporter.export(uri)
+                toasts.show(UiText.Res(if (done) R.string.settings_export_done else R.string.error_generic))
             }
         }
 
-        fun dismissExportMessage() = exportMessage.update { null }
+        /** Deletes every record and the account, after the trader typed DELETE. Needs the network. */
+        fun deleteAccount() {
+            if (deleting.value) return
+            if (!network.state.value.online) {
+                toasts.show(UiText.Res(R.string.settings_delete_needs_network))
+                return
+            }
+            deleting.value = true
+            viewModelScope.launch {
+                val done = deleter.deleteEverything()
+                deleting.value = false
+                toasts.show(UiText.Res(if (done) R.string.settings_delete_done else R.string.error_generic))
+            }
+        }
 
         private fun save(change: (UserSettings) -> UserSettings) {
             viewModelScope.launch { repository.save(change(repository.settings.value)) }

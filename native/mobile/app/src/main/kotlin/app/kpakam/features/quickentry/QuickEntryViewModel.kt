@@ -2,18 +2,21 @@ package app.kpakam.features.quickentry
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import app.kpakam.R
 import app.kpakam.core.draft.Draft
 import app.kpakam.core.draft.DraftResponse
 import app.kpakam.core.ids.IdGenerator
-import app.kpakam.core.routing.RouteDecision
+import app.kpakam.core.ids.Ulid
+import app.kpakam.features.ledger.CorrectionUseCase
 import app.kpakam.inference.DraftOrigin
 import app.kpakam.inference.ParseOutcome
 import app.kpakam.inference.ParseService
-import app.kpakam.inference.VoiceListen
 import app.kpakam.inference.VoiceService
 import app.kpakam.inference.queue.AiJob
 import app.kpakam.inference.queue.AiJobQueue
-import app.kpakam.platform.network.ConnectivitySource
+import app.kpakam.shared.ui.ToastAction
+import app.kpakam.shared.ui.ToastCenter
+import app.kpakam.shared.ui.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -24,7 +27,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/** Quick entry (F1), voice entry (F8), and the pending job list (F7). Unidirectional: events in, state out. */
+/** Quick entry (F1), voice results (F8), and the pending job list (F7). Unidirectional: events in, state out. */
 @HiltViewModel
 class QuickEntryViewModel
     @Inject
@@ -32,25 +35,35 @@ class QuickEntryViewModel
         private val parse: ParseService,
         private val voice: VoiceService,
         private val confirm: ConfirmDraftsUseCase,
+        private val corrections: CorrectionUseCase,
         private val queue: AiJobQueue,
         private val ids: IdGenerator,
-        network: ConnectivitySource,
+        private val toasts: ToastCenter,
+        handoff: VoiceHandoff,
     ) : ViewModel() {
         private val local = MutableStateFlow(QuickEntryUiState())
-        private var recordingDecision: RouteDecision? = null
 
         val state: StateFlow<QuickEntryUiState> =
-            combine(
-                local,
-                queue.open,
-                network.state,
-            ) { state, jobs, net -> state.copy(jobs = jobs, online = net.online) }
+            combine(local, queue.open) { state, jobs -> state.copy(jobs = jobs) }
                 .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), QuickEntryUiState())
+
+        init {
+            viewModelScope.launch {
+                handoff.results.collect { result ->
+                    when (result) {
+                        is VoiceResult.Words -> submitText(result.text)
+                        is VoiceResult.Read -> show(result.outcome)
+                    }
+                }
+            }
+        }
 
         fun onNoteChange(text: String) =
             local.update { it.copy(note = text.take(QuickEntryUiState.MAX_NOTE_CHARS), message = null) }
 
-        fun clearNote() = local.update { it.copy(note = "", transcript = null, message = null) }
+        /** An example chip such as "Sold…" adds its words to the note. */
+        fun addExample(text: String) =
+            local.update { it.copy(note = (it.note + text).trimStart().take(QuickEntryUiState.MAX_NOTE_CHARS)) }
 
         fun submit() {
             val current = local.value
@@ -58,17 +71,6 @@ class QuickEntryViewModel
             local.update { it.copy(phase = EntryPhase.Parsing, message = null, drafts = emptyList()) }
             viewModelScope.launch { show(parse.parseNote(current.note.trim())) }
         }
-
-        fun onMicTap() {
-            when (local.value.phase) {
-                EntryPhase.Listening -> voice.stopListening()
-                EntryPhase.Recording -> finishRecording()
-                EntryPhase.Idle -> viewModelScope.launch { startVoice() }
-                EntryPhase.Parsing, EntryPhase.Saving -> Unit
-            }
-        }
-
-        fun onMicDenied() = local.update { it.copy(message = EntryMessage.MicDenied) }
 
         fun startEdit(index: Int) = local.update { it.copy(editingIndex = index) }
 
@@ -101,7 +103,7 @@ class QuickEntryViewModel
             local.update { it.copy(phase = EntryPhase.Saving) }
             viewModelScope.launch {
                 val items = current.drafts.map { ConfirmableDraft(it.draft, it.journalId, it.idempotencyKey) }
-                onSaved(confirm.confirm(items, origin), current.reviewingJobId)
+                onSaved(confirm.confirm(items, origin), current.reviewingJobId, items.map { it.journalId })
             }
         }
 
@@ -120,84 +122,49 @@ class QuickEntryViewModel
 
         fun dismissMessage() = local.update { it.copy(message = null) }
 
-        private suspend fun onSaved(result: ConfirmResult, jobId: String?) {
+        /** Words checked on the voice screen are read like a typed note. */
+        private fun submitText(text: String) {
+            if (local.value.busy) return
+            local.update { it.copy(note = text.take(QuickEntryUiState.MAX_NOTE_CHARS), message = null) }
+            submit()
+        }
+
+        private suspend fun onSaved(result: ConfirmResult, jobId: String?, journals: List<Ulid>) {
             when (result) {
-                is ConfirmResult.Saved, ConfirmResult.AlreadySaved -> {
+                is ConfirmResult.Saved -> {
                     jobId?.let { queue.markReviewed(it) }
-                    val message =
-                        if (result is ConfirmResult.Saved) {
-                            EntryMessage.Saved(result.count)
-                        } else {
-                            EntryMessage.AlreadySaved
-                        }
-                    local.update { it.cleared(message) }
+                    local.update { it.cleared(null) }
+                    toasts.show(
+                        UiText.Plural(R.plurals.drafts_saved, result.count),
+                        ToastAction(R.string.history_undo) { undo(journals) },
+                    )
+                }
+                ConfirmResult.AlreadySaved -> {
+                    jobId?.let { queue.markReviewed(it) }
+                    local.update { it.cleared(null) }
+                    toasts.show(UiText.Res(R.string.drafts_duplicate))
                 }
                 is ConfirmResult.Invalid ->
                     local.update { state ->
                         state.copy(
                             phase = EntryPhase.Idle,
-                            drafts =
-                                state.drafts.replaceAt(result.index) { it.copy(error = result.error) },
+                            drafts = state.drafts.replaceAt(result.index) { it.copy(error = result.error) },
                         )
                     }
                 is ConfirmResult.Failed ->
-                    local.update {
-                        it.copy(
-                            phase = EntryPhase.Idle,
-                            message = EntryMessage.SaveFailed,
-                        )
-                    }
+                    local.update { it.copy(phase = EntryPhase.Idle, message = EntryMessage.SaveFailed) }
             }
         }
 
-        private suspend fun startVoice() {
-            val decision = voice.decide()
-            if (decision is RouteDecision.Device) {
-                listenOnDevice()
-            } else if (voice.startRecording(onLimit = ::finishRecording)) {
-                recordingDecision = decision
-                local.update { it.copy(phase = EntryPhase.Recording, message = null) }
-            } else {
-                local.update { it.copy(message = EntryMessage.ReadFailed) }
+        /** Undo from the "Entry saved" toast: every saved entry gets a reversal. */
+        private fun undo(journals: List<Ulid>) {
+            viewModelScope.launch {
+                journals.forEach { corrections.undo(it) }
+                toasts.show(UiText.Res(R.string.history_undone))
             }
         }
 
-        /** SPEECH_DEVICE: the transcript goes into the note, so the trader sees it before drafts are made. */
-        private suspend fun listenOnDevice() {
-            local.update { it.copy(phase = EntryPhase.Listening, message = null) }
-            val result =
-                voice.listenOnDevice(onSendingClip = {
-                    local.update { it.copy(phase = EntryPhase.Parsing, message = EntryMessage.Mixed) }
-                })
-            when (result) {
-                is VoiceListen.Transcript ->
-                    local.update {
-                        it.copy(
-                            phase = EntryPhase.Idle,
-                            note = result.text.take(QuickEntryUiState.MAX_NOTE_CHARS),
-                            transcript = result.text,
-                            message = EntryMessage.CheckWords,
-                        )
-                    }
-                VoiceListen.NothingHeard ->
-                    local.update {
-                        it.copy(
-                            phase = EntryPhase.Idle,
-                            message = EntryMessage.NoSpeech,
-                        )
-                    }
-                is VoiceListen.SentClip -> show(result.outcome, voice = true)
-            }
-        }
-
-        private fun finishRecording() {
-            val decision = recordingDecision ?: return
-            recordingDecision = null
-            local.update { it.copy(phase = EntryPhase.Parsing) }
-            viewModelScope.launch { show(voice.finishRecording(decision), voice = true) }
-        }
-
-        private fun show(outcome: ParseOutcome, voice: Boolean = false) =
+        private fun show(outcome: ParseOutcome) =
             local.update { state ->
                 when (outcome) {
                     is ParseOutcome.Drafts -> state.withDrafts(outcome.response, outcome.origin, jobId = null)
@@ -205,7 +172,7 @@ class QuickEntryViewModel
                         state.copy(
                             phase = EntryPhase.Idle,
                             note = "",
-                            message = EntryMessage.Queued(outcome.queueReason, voice),
+                            message = EntryMessage.Queued(outcome.queueReason),
                         )
                     is ParseOutcome.Failed -> state.copy(phase = EntryPhase.Idle, message = EntryMessage.ReadFailed)
                 }
@@ -221,9 +188,10 @@ class QuickEntryViewModel
             val question = response.needsClarification?.takeIf { drafts.isEmpty() }
             return copy(
                 phase = EntryPhase.Idle,
+                note = if (drafts.isEmpty()) note else "",
                 drafts = drafts,
                 origin = origin,
-                transcript = response.transcript ?: transcript,
+                transcript = response.transcript,
                 message =
                     when {
                         question != null -> EntryMessage.Clarify(question)

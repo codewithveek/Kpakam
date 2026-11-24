@@ -21,10 +21,6 @@ sealed interface EntryPhase {
 
     data object Parsing : EntryPhase
 
-    data object Listening : EntryPhase
-
-    data object Recording : EntryPhase
-
     data object Saving : EntryPhase
 }
 
@@ -34,21 +30,7 @@ sealed interface EntryMessage {
 
     data object ReadFailed : EntryMessage
 
-    data class Queued(val queueReason: QueueReason, val voice: Boolean = false) : EntryMessage
-
-    data class Saved(val count: Int) : EntryMessage
-
-    data object AlreadySaved : EntryMessage
-
-    data object NoSpeech : EntryMessage
-
-    /** The phone wrote down what it heard; the trader checks the words first. */
-    data object CheckWords : EntryMessage
-
-    /** Mixed languages heard: the voice note is being read online. */
-    data object Mixed : EntryMessage
-
-    data object MicDenied : EntryMessage
+    data class Queued(val queueReason: QueueReason) : EntryMessage
 
     data object SaveFailed : EntryMessage
 }
@@ -64,7 +46,6 @@ data class QuickEntryUiState(
     val editingIndex: Int? = null,
     val message: EntryMessage? = null,
     val jobs: List<AiJob> = emptyList(),
-    val online: Boolean = true,
 ) {
     val canSubmit: Boolean get() = note.isNotBlank() && phase == EntryPhase.Idle
     val busy: Boolean get() = phase != EntryPhase.Idle

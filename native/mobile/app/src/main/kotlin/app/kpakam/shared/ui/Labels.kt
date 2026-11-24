@@ -5,7 +5,6 @@ import app.kpakam.R
 import app.kpakam.core.draft.DraftKind
 import app.kpakam.core.ledger.JournalKind
 import app.kpakam.core.ledger.LedgerError
-import app.kpakam.core.routing.ModelState
 
 /** Plain-English label for a draft kind. */
 @StringRes
@@ -37,14 +36,4 @@ fun ledgerErrorLabel(error: LedgerError): Int =
         LedgerError.AmountTooSmall -> R.string.error_amount_too_small
         LedgerError.AlreadyReversed -> R.string.error_already_reversed
         is LedgerError.InvariantViolated -> R.string.error_generic
-    }
-
-/** Plain-English label for the on-device model state. */
-@StringRes
-fun modelStateLabel(state: ModelState): Int =
-    when (state) {
-        ModelState.AVAILABLE -> R.string.phone_reading_ready
-        ModelState.DOWNLOADABLE -> R.string.phone_reading_downloadable
-        ModelState.DOWNLOADING -> R.string.phone_reading_downloading
-        ModelState.UNAVAILABLE -> R.string.phone_reading_unavailable
     }

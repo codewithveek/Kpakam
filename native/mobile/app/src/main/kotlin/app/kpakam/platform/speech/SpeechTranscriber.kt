@@ -10,6 +10,7 @@ import android.os.Looper
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
+import app.kpakam.core.audio.Loudness
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -33,8 +34,9 @@ interface SpeechTranscriber {
     /**
      * Listens for up to 30 seconds and returns the transcript. With a [shared] capture (Android 13+),
      * the recogniser reads the app's own microphone audio, so the same audio is also kept as a clip.
+     * [onPartial] receives the words heard so far, live, while the trader speaks.
      */
-    suspend fun listen(shared: SharedCapture? = null): TranscriptResult
+    suspend fun listen(shared: SharedCapture? = null, onPartial: (String) -> Unit = {}): TranscriptResult
 
     /** Stops listening early; [listen] then returns what it heard. */
     fun stop()
@@ -46,17 +48,20 @@ class AndroidSpeechTranscriber
     @Inject
     constructor(
         @param:ApplicationContext private val context: Context,
+        private val micLevel: MicLevel,
     ) : SpeechTranscriber {
         private val handler = Handler(Looper.getMainLooper())
         private var recognizer: SpeechRecognizer? = null
 
-        override suspend fun listen(shared: SharedCapture?): TranscriptResult =
+        override suspend fun listen(shared: SharedCapture?, onPartial: (String) -> Unit): TranscriptResult =
             withContext(Dispatchers.Main) {
                 val created = create()
                 recognizer = created
                 try {
                     suspendCancellableCoroutine { continuation ->
-                        created.setRecognitionListener(Listener { continuation.resume(it) })
+                        // With a shared capture, the capture reports the loudness from the same audio.
+                        val level: ((Float) -> Unit)? = if (shared == null) micLevel::report else null
+                        created.setRecognitionListener(Listener(onPartial, level) { continuation.resume(it) })
                         created.startListening(intentFor(shared))
                         handler.postDelayed({ created.stopListening() }, MAX_LISTEN_MS)
                         continuation.invokeOnCancellation { handler.post { created.cancel() } }
@@ -65,6 +70,7 @@ class AndroidSpeechTranscriber
                     handler.removeCallbacksAndMessages(null)
                     created.destroy()
                     recognizer = null
+                    micLevel.reset()
                 }
             }
 
@@ -74,6 +80,7 @@ class AndroidSpeechTranscriber
 
         private fun intentFor(shared: SharedCapture?): Intent {
             val intent = LocalSpeechChecker.englishIntent()
+            intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
             if (shared is PipedCapture && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE, shared.recognizerAudio)
                 intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_CHANNEL_COUNT, 1)
@@ -90,7 +97,11 @@ class AndroidSpeechTranscriber
                 SpeechRecognizer.createSpeechRecognizer(context)
             }
 
-        private class Listener(private val done: (TranscriptResult) -> Unit) : RecognitionListener {
+        private class Listener(
+            private val onPartial: (String) -> Unit,
+            private val onLevel: ((Float) -> Unit)?,
+            private val done: (TranscriptResult) -> Unit,
+        ) : RecognitionListener {
             private var finished = false
 
             private fun finish(result: TranscriptResult) {
@@ -126,13 +137,23 @@ class AndroidSpeechTranscriber
 
             override fun onBeginningOfSpeech() = Unit
 
-            override fun onRmsChanged(rmsdB: Float) = Unit
+            override fun onRmsChanged(rmsdB: Float) {
+                onLevel?.invoke(Loudness.ofRecognizerDb(rmsdB))
+            }
 
             override fun onBufferReceived(buffer: ByteArray?) = Unit
 
             override fun onEndOfSpeech() = Unit
 
-            override fun onPartialResults(partialResults: Bundle?) = Unit
+            override fun onPartialResults(partialResults: Bundle?) {
+                if (finished) return
+                val words =
+                    partialResults
+                        ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                        ?.firstOrNull()
+                        ?.trim()
+                if (!words.isNullOrEmpty()) onPartial(words)
+            }
 
             override fun onEvent(eventType: Int, params: Bundle?) = Unit
         }
