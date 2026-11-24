@@ -33,7 +33,7 @@ object Contract {
         fun load(id: String) = PromptTemplate.parse(text("prompts/$id.md"))
         PromptAssembler(
             PromptSet(
-                load("parse-v1"),
+                load("parse-v2"),
                 load("parse-retry-v1"),
                 load("voice-v1"),
                 load("receipt-v1"),

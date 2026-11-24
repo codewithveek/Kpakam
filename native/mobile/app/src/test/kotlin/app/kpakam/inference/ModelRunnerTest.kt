@@ -54,7 +54,7 @@ class ModelRunnerTest {
             outcome as RunOutcome.Parsed
             assertEquals(InferenceSource.ON_DEVICE, outcome.origin.source)
             assertEquals(1, outcome.trace.attempts)
-            assertEquals("parse-v1", outcome.origin.promptVersion)
+            assertEquals("parse-v2", outcome.origin.promptVersion)
         }
 
     @Test

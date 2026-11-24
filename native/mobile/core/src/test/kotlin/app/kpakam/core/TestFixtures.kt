@@ -30,7 +30,7 @@ object TestFixtures {
     val prompts: PromptSet by lazy {
         fun load(id: String) = PromptTemplate.parse(ContractFiles.text("prompts/$id.md"))
         PromptSet(
-            parse = load("parse-v1"),
+            parse = load("parse-v2"),
             parseRetry = load("parse-retry-v1"),
             voice = load("voice-v1"),
             receipt = load("receipt-v1"),

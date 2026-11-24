@@ -54,7 +54,7 @@ listed at the top of `.github/workflows/deploy.yml`.
 | `route_min_battery`           | Battery level below which the cloud is preferred           | `0.15`                  |
 | `cloud_rate_limit_per_minute` | Cloud calls per trader per minute                          | `10`                    |
 | `insights_enabled`            | Shows or hides the weekly report                           | `true`                  |
-| `prompt_version_parse`        | The parse prompt version that is live (see section 6)      | `parse-v1`              |
+| `prompt_version_parse`        | The parse prompt version that is live (see section 6)      | `parse-v2`              |
 
 The apps fetch Remote Config at most once an hour. The bundled defaults in
 `packages/contract/remote-config.defaults.json` apply until the first fetch.
@@ -95,10 +95,10 @@ yet. To repair by hand:
 
 ## 6. Evaluate a new prompt
 
-1. Copy `packages/contract/prompts/parse-v1.md` to a new version file.
+1. Copy the latest `packages/contract/prompts/parse-vN.md` to a new version file.
 2. Run the cloud eval: `npm run eval:cloud -w @kpakam/web -- --set all`.
 3. Run the on-device eval in Chrome at `/dev/eval` (dev builds only).
 4. Ship the new version only if neither set loses accuracy.
-5. Today each app bundles one parse prompt (`parse-v1`). To switch versions,
+5. Today each app bundles one parse prompt (now `parse-v2`, which adds spoken corrections). To switch versions,
    bundle the new file in a release first; `prompt_version_parse` records which
    version is live, and the eval script reads it.

@@ -24,7 +24,7 @@ export function TodayPage() {
   const stats = useWeeklyStats();
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader eyebrow={formatLagosDate(today)} title={MESSAGES.greeting(new Date().getHours())} />
+      <PageHeader title={`${MESSAGES.greeting(new Date().getHours())},`} subtitle={formatLagosDate(today)} />
       <TodayTotals totals={totals} cloudCallsSaved={stats?.cloudCallsAvoided ?? null} />
       <QuickEntryPanel />
       <JobList jobs={jobs} />
@@ -34,20 +34,20 @@ export function TodayPage() {
           title={MESSAGES.dashboard.recent}
           action={
             view.entries.length > RECENT && (
-              <Link to="/history" className="press flex min-h-10 items-center px-1 text-[15px] font-semibold text-primary">
+              <Link to="/history" className="press flex min-h-10 items-center rounded-full bg-surface px-4 text-[14px] font-semibold text-text">
                 {MESSAGES.dashboard.seeAll}
               </Link>
             )
           }
         />
         {summary !== null && (
-          <p className="flex gap-2 rounded-[16px] bg-surface-2 p-3 text-[15px]">
-            <SparkIcon className="shrink-0 text-accent" width={20} height={20} />
+          <p className="flex gap-3 rounded-[24px] bg-surface p-4 text-[15px] leading-snug">
+            <SparkIcon className="mt-0.5 shrink-0" width={18} height={18} />
             <span>{summary}</span>
           </p>
         )}
         {!view.loading && view.entries.length === 0 && (
-          <p className="rounded-[16px] border border-dashed border-border p-5 text-center text-muted">{MESSAGES.dashboard.noEntries}</p>
+          <p className="rounded-[24px] bg-surface p-6 text-center text-[15px] text-muted">{MESSAGES.dashboard.noEntries}</p>
         )}
         <JournalList entries={view.entries.slice(0, RECENT)} reversed={view.reversed} customers={byId} label={MESSAGES.ledger.title} />
       </section>

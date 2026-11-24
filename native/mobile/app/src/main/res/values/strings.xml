@@ -33,7 +33,7 @@
         <item quantity="one">%d character left</item>
         <item quantity="other">%d characters left</item>
     </plurals>
-    <string name="entry_submit">Read it</string>
+    <string name="entry_submit">Send</string>
     <string name="entry_working">Reading your note…</string>
     <string name="entry_clear">Clear</string>
     <string name="entry_queued_offline">Saved. It will be read when the network returns.</string>
@@ -52,7 +52,7 @@
     <string name="voice_tap_stop">Tap to finish</string>
     <string name="voice_listening">Listening… say what you sold or spent</string>
     <string name="voice_transcript">You said: “%1$s”</string>
-    <string name="voice_check_words">Check the words, then tap Read it.</string>
+    <string name="voice_check_words">Check the words, then tap Send.</string>
     <string name="voice_mixed">Mixed languages heard. Kpakam is reading your voice note online.</string>
     <string name="voice_queued">Voice note saved. It will be read when the network returns.</string>
     <string name="voice_mic_denied">Kpakam cannot use the microphone. Allow it in your phone settings.</string>

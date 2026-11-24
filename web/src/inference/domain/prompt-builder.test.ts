@@ -1,4 +1,4 @@
-import parseFile from '@contract/prompts/parse-v1.md?raw';
+import parseFile from '@contract/prompts/parse-v2.md?raw';
 import retryFile from '@contract/prompts/parse-retry-v1.md?raw';
 import voiceFile from '@contract/prompts/voice-v1.md?raw';
 import { describe, expect, it } from 'vitest';
@@ -8,7 +8,7 @@ describe('prompt builder', () => {
   const parse = parsePromptFile(parseFile);
 
   it('reads the version header', () => {
-    expect(parse.id).toBe('parse-v1');
+    expect(parse.id).toBe('parse-v2');
     expect(parse.body.startsWith('You turn')).toBe(true);
     expect(() => parsePromptFile('no header')).toThrow();
   });

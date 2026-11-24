@@ -5,8 +5,8 @@ export type EntryKind = 'sale' | 'credit_sale' | 'repayment' | 'expense' | 'reve
 
 const ICONS = { sale: ArrowDownLeftIcon, repayment: ArrowDownLeftIcon, credit_sale: HandCoinsIcon, expense: ArrowUpRightIcon, reversal: UndoIcon } as const;
 const TONES: Readonly<Record<EntryKind, string>> = {
-  sale: 'bg-device-soft text-income',
-  repayment: 'bg-cloud-soft text-cloud',
+  sale: 'bg-surface-2 text-text',
+  repayment: 'bg-surface-2 text-text',
   credit_sale: 'bg-accent-soft text-credit',
   expense: 'bg-surface-2 text-text',
   reversal: 'bg-surface-2 text-muted',

@@ -162,7 +162,7 @@ val copyContractAssets =
         contractDir.set(contractRoot)
         paths.set(
             listOf(
-                "prompts/parse-v1.md",
+                "prompts/parse-v2.md",
                 "prompts/parse-retry-v1.md",
                 "prompts/voice-v1.md",
                 "prompts/receipt-v1.md",

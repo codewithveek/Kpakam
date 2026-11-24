@@ -95,8 +95,8 @@ export function JournalRow({ entry, reversed, customerName, isNew = false }: Jou
   const [open, setOpen] = useState(false);
   const detailsId = useId();
   return (
-    <li className={isNew ? 'flash-new' : ''} data-testid="journal-row" data-kind={journal.kind}>
-      <button type="button" className="press w-full active:bg-surface-2" aria-expanded={open} aria-controls={detailsId} onClick={() => setOpen(!open)}>
+    <li className={`overflow-hidden rounded-[24px] bg-surface ${isNew ? 'flash-new' : ''}`} data-testid="journal-row" data-kind={journal.kind}>
+      <button type="button" className="press w-full" aria-expanded={open} aria-controls={detailsId} onClick={() => setOpen(!open)}>
         <RowContent
           leading={<KindAvatar kind={journal.kind} />}
           title={titleOf(journal, customerName)}

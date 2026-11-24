@@ -7,6 +7,8 @@ export interface AudioClip {
 
 export interface Recording {
   readonly done: Promise<AudioClip>;
+  /** The live microphone stream, for the sound wave. */
+  readonly stream: MediaStream;
   stop(): void;
 }
 
@@ -49,5 +51,20 @@ export async function startRecording(): Promise<{ ok: true; recording: Recording
     };
   });
   recorder.start();
-  return { ok: true, recording: { done, stop: () => recorder.state === 'recording' && recorder.stop() } };
+  return { ok: true, recording: { done, stream, stop: () => recorder.state === 'recording' && recorder.stop() } };
+}
+
+/** Opens the microphone only to draw the sound wave (phone listening without a recording). */
+export async function openMeterStream(): Promise<MediaStream | null> {
+  if (!('mediaDevices' in navigator)) return null;
+  try {
+    return await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1 } });
+  } catch {
+    return null;
+  }
+}
+
+/** Releases a microphone stream. */
+export function closeStream(stream: MediaStream | null): void {
+  stream?.getTracks().forEach((track) => track.stop());
 }

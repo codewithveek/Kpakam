@@ -85,7 +85,7 @@ export function DraftReview({ job, output }: { readonly job: AiJob; readonly out
   return (
     <article className="flex flex-col gap-3" aria-label={MESSAGES.drafts.title}>
       <div className="flex flex-col gap-2">
-        <h3 className="text-[17px] font-semibold">{MESSAGES.drafts.title}</h3>
+        <h3 className="text-[20px] font-bold tracking-[-0.02em]">{MESSAGES.drafts.title}</h3>
         <InferenceBadge source={output.source} reason={output.reason} />
       </div>
       {output.response.transcript !== null && (

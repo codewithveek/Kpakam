@@ -34,10 +34,10 @@ export function DayStrip({ today, value, onChange }: DayStripProps) {
           <label
             key={day}
             ref={active ? selected : undefined}
-            className={`press flex min-h-16 w-14 shrink-0 cursor-pointer flex-col items-center justify-center rounded-[16px] border text-center has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-[var(--color-focus)] ${active ? 'border-primary bg-primary text-on-primary' : 'border-border bg-surface text-text'}`}
+            className={`press flex min-h-[76px] w-[58px] shrink-0 cursor-pointer flex-col items-center justify-center rounded-full text-center has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-[var(--color-focus)] ${active ? 'bg-ink text-on-ink' : 'bg-surface text-text'}`}
           >
             <input type="radio" name="history-day" className="sr-only" checked={active} onChange={() => onChange(day)} />
-            <span className={`text-[12px] font-semibold ${active ? '' : 'text-muted'}`}>
+            <span className={`text-[12px] font-semibold ${active ? 'text-on-ink-muted' : 'text-muted'}`}>
               {day === today ? MESSAGES.dashboard.title : WEEKDAY.format(at(day))}
             </span>
             <span className="amount text-[18px] font-bold">{DATE.format(at(day))}</span>

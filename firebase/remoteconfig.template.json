@@ -21,7 +21,7 @@
       "valueType": "NUMBER"
     },
     "prompt_version_parse": {
-      "defaultValue": { "value": "parse-v1" },
+      "defaultValue": { "value": "parse-v2" },
       "description": "Version of the parse prompt that both apps assemble.",
       "valueType": "STRING"
     },

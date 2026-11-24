@@ -25,18 +25,18 @@ export function ToastHost() {
     <div
       role="status"
       aria-live="polite"
-      className="pointer-events-none fixed inset-x-0 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-50 flex justify-center px-4"
+      className="pointer-events-none fixed inset-x-0 bottom-[calc(6.5rem+env(safe-area-inset-bottom))] z-50 flex justify-center px-4"
     >
       {toast !== null && (
         <div
           key={toast.id}
-          className="enter-toast pointer-events-auto flex min-h-12 max-w-md items-center gap-3 rounded-full bg-text py-1.5 pl-5 pr-1.5 text-[15px] font-medium text-bg shadow-float"
+          className="enter-toast pointer-events-auto flex min-h-12 max-w-md items-center gap-3 rounded-full bg-ink py-1.5 pl-5 pr-1.5 text-[15px] font-medium text-on-ink shadow-float"
         >
           <span className="py-1.5">{toast.text}</span>
           {toast.action !== null && (
             <button
               type="button"
-              className="press min-h-10 rounded-full bg-bg/15 px-4 font-semibold text-bg"
+              className="press min-h-10 rounded-full bg-surface px-4 font-semibold text-text"
               onClick={() => {
                 toast.action?.run();
                 clear();

@@ -46,7 +46,7 @@ Tags:
 
 ## Rules for expected drafts
 
-These rules follow `prompts/parse-v1.md` and `ledger.md`.
+These rules follow `prompts/parse-v2.md` and `ledger.md`.
 
 - Every draft sets all 8 fields: `kind`, `item`, `quantity`, `unit`,
   `totalNaira`, `paidNaira`, `customerName`, `confidence`. A field that the

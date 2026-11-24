@@ -17,17 +17,23 @@ export function HistoryPage() {
   const { byId } = useCustomers();
   const totals = useMemo(() => computeDayTotals(view.entries.map((e) => e.journal)), [view.entries]);
   return (
-    <div className="flex flex-col gap-4">
-      <PageHeader title={MESSAGES.ledger.title} eyebrow={formatLagosDate(day)} />
+    <div className="flex flex-col gap-5">
+      <PageHeader title={MESSAGES.ledger.title} subtitle={formatLagosDate(day)} />
       <DayStrip today={today} value={day} onChange={setDay} />
       {view.entries.length > 0 && (
-        <p className="amount px-1 text-[15px] text-muted" aria-live="polite">
-          {MESSAGES.ledger.daySales} <span className="font-semibold text-income">+{formatNaira(totals.sales)}</span> · {MESSAGES.ledger.dayExpenses}{' '}
-          <span className="font-semibold text-text">−{formatNaira(totals.expenses)}</span>
-        </p>
+        <div className="grid grid-cols-2 gap-2" aria-live="polite">
+          <p className="flex flex-col gap-1 rounded-[24px] bg-surface p-4">
+            <span className="text-[13px] font-medium text-muted">{MESSAGES.ledger.daySales}</span>
+            <span className="amount text-[22px] font-bold tracking-[-0.02em] text-income">+{formatNaira(totals.sales)}</span>
+          </p>
+          <p className="flex flex-col gap-1 rounded-[24px] bg-surface p-4">
+            <span className="text-[13px] font-medium text-muted">{MESSAGES.ledger.dayExpenses}</span>
+            <span className="amount text-[22px] font-bold tracking-[-0.02em]">−{formatNaira(totals.expenses)}</span>
+          </p>
+        </div>
       )}
       {!view.loading && view.entries.length === 0 && (
-        <p className="rounded-[16px] border border-dashed border-border p-5 text-center text-muted">{MESSAGES.ledger.empty}</p>
+        <p className="rounded-[24px] bg-surface p-6 text-center text-[15px] text-muted">{MESSAGES.ledger.empty}</p>
       )}
       <JournalList entries={view.entries} reversed={view.reversed} customers={byId} label={MESSAGES.ledger.title} />
     </div>

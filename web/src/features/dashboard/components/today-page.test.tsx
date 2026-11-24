@@ -17,7 +17,7 @@ describe('Today screen (F1, F5, F6)', () => {
     renderScreen(TodayPage, { services: fake.services });
 
     await user.type(await screen.findByLabelText('What happened?'), 'sold 3 bags of rice 45k, Mama Bisi paid 35k');
-    await user.click(screen.getByRole('button', { name: 'Read it' }));
+    await user.click(screen.getByRole('button', { name: 'Send' }));
 
     const review = await screen.findByRole('article', { name: 'Check and save' });
     expect(within(review).getByTestId('inference-badge')).toHaveTextContent('On your phone');
@@ -36,7 +36,7 @@ describe('Today screen (F1, F5, F6)', () => {
     const fake = createFakeServices({ script: { device: [{ text: SALE }] } });
     renderScreen(TodayPage, { services: fake.services });
     await user.type(await screen.findByLabelText('What happened?'), 'sold rice');
-    await user.click(screen.getByRole('button', { name: 'Read it' }));
+    await user.click(screen.getByRole('button', { name: 'Send' }));
     const review = await screen.findByRole('article', { name: 'Check and save' });
 
     await user.click(within(review).getByRole('button', { name: 'Edit' }));
@@ -53,7 +53,7 @@ describe('Today screen (F1, F5, F6)', () => {
     const fake = createFakeServices({ script: { device: [{ text: JSON.stringify({ drafts: [], needsClarification: 'How much was the rice?' }) }] } });
     renderScreen(TodayPage, { services: fake.services });
     await user.type(await screen.findByLabelText('What happened?'), 'sold rice');
-    await user.click(screen.getByRole('button', { name: 'Read it' }));
+    await user.click(screen.getByRole('button', { name: 'Send' }));
     expect(await screen.findByText('How much was the rice?')).toBeInTheDocument();
   });
 
@@ -62,7 +62,7 @@ describe('Today screen (F1, F5, F6)', () => {
     const fake = createFakeServices({ env: { online: false, deviceModel: 'unavailable' } });
     renderScreen(TodayPage, { services: fake.services });
     await user.type(await screen.findByLabelText('What happened?'), 'sold rice 5k');
-    await user.click(screen.getByRole('button', { name: 'Read it' }));
+    await user.click(screen.getByRole('button', { name: 'Send' }));
     const job = await screen.findByTestId('job');
     // A new job is briefly "queued" before its first run, so wait for the final badge.
     await waitFor(() => expect(within(job).getByTestId('inference-badge')).toHaveTextContent('Waiting for network'));

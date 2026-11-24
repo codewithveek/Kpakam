@@ -1,4 +1,4 @@
-import parseFile from '@contract/prompts/parse-v1.md?raw';
+import parseFile from '@contract/prompts/parse-v2.md?raw';
 import retryFile from '@contract/prompts/parse-retry-v1.md?raw';
 import receiptFile from '@contract/prompts/receipt-v1.md?raw';
 import voiceFile from '@contract/prompts/voice-v1.md?raw';
@@ -48,7 +48,7 @@ describe('parse service', () => {
   it('parses a plain English sale on device', async () => {
     const { service, calls, events } = setup({ device: [{ text: GOOD }] });
     const outcome = await service.parseText('sold 3 bags of rice 45k', OPTS);
-    expect(outcome.type === 'drafts' && outcome.output).toMatchObject({ source: 'on_device', reason: 'DEFAULT_DEVICE', promptVersion: 'parse-v1' });
+    expect(outcome.type === 'drafts' && outcome.output).toMatchObject({ source: 'on_device', reason: 'DEFAULT_DEVICE', promptVersion: 'parse-v2' });
     expect(calls.map((c) => c.target)).toEqual(['device']);
     expect(events[0]).toMatchObject({ source: 'on_device', valid: true, attempts: 1, escalated: false });
     expect(JSON.stringify(events)).not.toContain('rice');

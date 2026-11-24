@@ -3,7 +3,7 @@ import { useAppStore } from '@/app/app-store';
 import { useServices } from '@/app/services';
 import { MESSAGES } from '@/shared/messages/en';
 import { ChevronRightIcon, DownloadIcon, LinkIcon, TrashIcon } from '@/shared/ui/icons';
-import { ListGroup } from '@/shared/ui/list';
+import { ListPanel } from '@/shared/ui/list';
 import { buildExport, deleteAccount, downloadBlob } from '../service/account-service';
 
 function ActionRow({
@@ -22,9 +22,9 @@ function ActionRow({
       <button
         type="button"
         onClick={onClick}
-        className={`press flex min-h-14 w-full items-center gap-3 px-4 text-left text-[15px] font-semibold active:bg-surface-2 ${danger ? 'text-danger' : ''}`}
+        className={`press flex min-h-[68px] w-full items-center gap-3 px-4 text-left text-[16px] font-semibold ${danger ? 'text-danger' : ''}`}
       >
-        <span className={`flex h-9 w-9 items-center justify-center rounded-full ${danger ? 'bg-danger-soft' : 'bg-surface-2'}`}>{icon}</span>
+        <span className={`flex h-11 w-11 items-center justify-center rounded-[14px] ${danger ? 'bg-danger-soft' : 'bg-surface-2'}`}>{icon}</span>
         <span className="flex-1">{label}</span>
         {!danger && <ChevronRightIcon width={18} height={18} className="text-muted" />}
       </button>
@@ -60,13 +60,13 @@ export function AccountPanel() {
       <p className="px-1 text-[13px] leading-snug text-muted">
         {identity?.anonymous !== false ? MESSAGES.settings.anonymous : MESSAGES.settings.linkedAs(identity.email ?? '')}
       </p>
-      <ListGroup>
+      <ListPanel>
         {identity?.anonymous !== false && (
           <ActionRow icon={<LinkIcon width={18} height={18} />} label={MESSAGES.settings.linkGoogle} onClick={() => void link()} />
         )}
         <ActionRow icon={<DownloadIcon width={18} height={18} />} label={MESSAGES.settings.exportData} onClick={exportData} />
         <ActionRow icon={<TrashIcon width={18} height={18} />} label={MESSAGES.settings.deleteAccount} onClick={() => void remove()} danger />
-      </ListGroup>
+      </ListPanel>
     </div>
   );
 }

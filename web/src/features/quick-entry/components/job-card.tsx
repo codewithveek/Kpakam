@@ -97,7 +97,7 @@ export function JobCard({ job }: { readonly job: AiJob }) {
   else if (output.response.drafts.length === 0) body = <Clarify job={job} question={output.response.needsClarification ?? MESSAGES.quickEntry.empty} />;
   else body = <DraftReview job={job} output={output} />;
   return (
-    <li ref={ref} className="enter-rise scroll-mb-28 rounded-[24px] border border-border bg-surface p-4 shadow-card" data-testid="job" data-state={job.state}>
+    <li ref={ref} className="enter-rise scroll-mb-36 rounded-[28px] bg-surface p-5" data-testid="job" data-state={job.state}>
       {body}
     </li>
   );

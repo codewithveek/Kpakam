@@ -12,7 +12,7 @@ describe('runGolden', () => {
     const lines = parseGolden(enGolden).slice(0, 5);
     const perfect = createScriptedInferenceClient({ device: lines.map((l) => ({ text: JSON.stringify(l.expected) })) });
     const good = await runGolden(lines, { client: perfect.client, target: 'device', prompt: PROMPTS.parse, validate });
-    expect(good).toMatchObject({ total: 5, validPct: 100, correctPct: 100, promptVersion: 'parse-v1' });
+    expect(good).toMatchObject({ total: 5, validPct: 100, correctPct: 100, promptVersion: 'parse-v2' });
     expect(good.fieldPct.kind).toBe(100);
 
     const broken = createScriptedInferenceClient({ fallback: () => ({ text: 'not json' }) });

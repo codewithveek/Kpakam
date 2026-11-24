@@ -7,7 +7,7 @@ test('journey 1: record a sale offline, on device, then it syncs on reconnect (F
   await expect(page.getByTestId('network-status')).toHaveAttribute('data-online', 'false');
 
   await page.getByLabel('What happened?').fill('sold 3 bags of rice 45k');
-  await page.getByRole('button', { name: 'Read it' }).click();
+  await page.getByRole('button', { name: 'Send', exact: true }).click();
   const badge = page.getByTestId('inference-badge').first();
   await expect(badge).toHaveAttribute('data-source', 'on_device');
   await expect(badge).toHaveAttribute('data-reason', 'DEFAULT_DEVICE');

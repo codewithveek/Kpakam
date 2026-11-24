@@ -17,7 +17,7 @@ class PromptAssemblyTest {
 
     @Test
     fun `headers parse and ids match file names`() {
-        assertEquals("parse-v1", prompts.parse.id)
+        assertEquals("parse-v2", prompts.parse.id)
         assertEquals("parse_text", prompts.parse.task)
         assertEquals("schemas/draft.schema.json", prompts.parse.output)
         assertEquals("parse-retry-v1", prompts.parseRetry.id)

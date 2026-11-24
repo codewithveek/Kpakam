@@ -21,7 +21,7 @@ function CustomerRow({ customer }: { readonly customer: Customer }) {
       <Link
         to="/customers/$customerId"
         params={{ customerId: customer.id }}
-        className="press flex items-center pr-3 active:bg-surface-2"
+        className="press flex items-center rounded-[24px] bg-surface pr-4"
         data-testid="customer-row"
       >
         <RowContent
@@ -30,7 +30,9 @@ function CustomerRow({ customer }: { readonly customer: Customer }) {
           subtitle={<span className={tone}>{text}</span>}
           trailing={
             customer.balanceKobo === 0 ? undefined : (
-              <span className={`amount text-[16px] font-semibold ${tone}`}>{formatNaira(Math.abs(customer.balanceKobo) as Customer['balanceKobo'])}</span>
+              <span className={`amount text-[17px] font-semibold ${customer.balanceKobo > 0 ? 'text-text' : 'text-muted'}`}>
+                {formatNaira(Math.abs(customer.balanceKobo) as Customer['balanceKobo'])}
+              </span>
             )
           }
         />
@@ -48,21 +50,21 @@ export function DebtBookPage() {
   return (
     <div className="flex flex-col gap-5">
       <PageHeader title={MESSAGES.customers.title} />
-      <section aria-labelledby="owed-label" className="rounded-[24px] border border-border bg-surface p-5 shadow-card">
-        <p id="owed-label" className="text-[15px] font-medium text-muted">
+      <section aria-labelledby="owed-label" className="rounded-[32px] bg-ink p-6 text-on-ink">
+        <p id="owed-label" className="text-[15px] font-medium text-on-ink-muted">
           {MESSAGES.customers.totalOwed}
         </p>
-        <p className="amount mt-1 text-[36px] font-bold leading-none tracking-[-0.03em] text-credit" data-testid="total-owed">
+        <p className="amount display mt-3 text-[44px] font-bold" data-testid="total-owed">
           {formatNaira(owed)}
         </p>
-        <p className="mt-2 text-[15px] text-muted">{MESSAGES.customers.fromCustomers(debtors.length)}</p>
+        <p className="mt-2 text-[15px] text-on-ink-muted">{MESSAGES.customers.fromCustomers(debtors.length)}</p>
       </section>
       {!loading && customers.length === 0 && (
-        <div className="flex flex-col items-center gap-3 rounded-[24px] border border-dashed border-border p-8 text-center">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-surface-2 text-muted">
+        <div className="flex flex-col items-center gap-3 rounded-[28px] bg-surface p-8 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-[18px] bg-surface-2 text-text">
             <PeopleIcon />
           </span>
-          <p className="text-muted">{MESSAGES.customers.empty}</p>
+          <p className="text-[15px] text-muted">{MESSAGES.customers.empty}</p>
         </div>
       )}
       {customers.length > 0 && (

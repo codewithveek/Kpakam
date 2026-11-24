@@ -11,9 +11,9 @@ export interface ToggleRowProps {
 export function ToggleRow({ label, help, checked, onChange }: ToggleRowProps) {
   const id = useId();
   return (
-    <div className="flex items-center justify-between gap-4 px-4 py-3">
+    <div className="flex items-center justify-between gap-4 min-h-[72px] px-4 py-3">
       <div className="min-w-0">
-        <p id={`${id}-label`} className="text-[15px] font-semibold">
+        <p id={`${id}-label`} className="text-[16px] font-semibold">
           {label}
         </p>
         {help !== undefined && (
@@ -29,10 +29,10 @@ export function ToggleRow({ label, help, checked, onChange }: ToggleRowProps) {
         aria-labelledby={`${id}-label`}
         {...(help === undefined ? {} : { 'aria-describedby': `${id}-help` })}
         onClick={() => onChange(!checked)}
-        className={`press relative inline-flex h-8 w-[52px] shrink-0 items-center rounded-full transition-colors duration-200 before:absolute before:-inset-2 ${checked ? 'bg-primary' : 'bg-border'}`}
+        className={`press relative inline-flex h-8 w-[52px] shrink-0 items-center rounded-full transition-colors duration-200 before:absolute before:-inset-2 ${checked ? 'bg-ink' : 'bg-surface-3'}`}
       >
         <span
-          className={`flex h-6 w-6 items-center justify-center rounded-full bg-white text-[11px] font-bold text-primary shadow transition-transform duration-200 ease-[var(--ease-out)] ${checked ? 'translate-x-6' : 'translate-x-1'}`}
+          className={`flex h-6 w-6 items-center justify-center rounded-full bg-surface text-[11px] font-bold text-text shadow transition-transform duration-200 ease-[var(--ease-out)] ${checked ? 'translate-x-6' : 'translate-x-1'}`}
           aria-hidden="true"
         >
           {checked ? '✓' : ''}

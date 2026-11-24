@@ -23,6 +23,10 @@ interface AppState {
   readonly downloadProgress: number | null;
   readonly identity: TraderIdentity | null;
   readonly toast: Toast | null;
+  /** The note box text, shared so voice can fill it from any screen. */
+  readonly noteText: string;
+  /** True while the voice screen is open. */
+  readonly voiceOpen: boolean;
   setOnline: (online: boolean) => void;
   setSettings: (settings: TraderSettings) => void;
   setDeviceModel: (state: DeviceModelState) => void;
@@ -30,6 +34,8 @@ interface AppState {
   setIdentity: (identity: TraderIdentity | null) => void;
   showToast: (text: string, action?: ToastAction) => void;
   clearToast: () => void;
+  setNoteText: (text: string) => void;
+  setVoiceOpen: (open: boolean) => void;
 }
 
 let toastId = 0;
@@ -41,6 +47,8 @@ export const useAppStore = create<AppState>()((set) => ({
   downloadProgress: null,
   identity: null,
   toast: null,
+  noteText: '',
+  voiceOpen: false,
   setOnline: (online) => set({ online }),
   setSettings: (settings) => set({ settings }),
   setDeviceModel: (deviceModel) => set({ deviceModel }),
@@ -48,4 +56,6 @@ export const useAppStore = create<AppState>()((set) => ({
   setIdentity: (identity) => set({ identity }),
   showToast: (text, action) => set({ toast: { id: (toastId += 1), text, action: action ?? null } }),
   clearToast: () => set({ toast: null }),
+  setNoteText: (noteText) => set({ noteText }),
+  setVoiceOpen: (voiceOpen) => set({ voiceOpen }),
 }));

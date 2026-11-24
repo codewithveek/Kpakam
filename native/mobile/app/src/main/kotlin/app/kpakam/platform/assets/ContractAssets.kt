@@ -25,7 +25,7 @@ class ContractAssets
     ) {
         val prompts: PromptSet by lazy {
             PromptSet(
-                parse = prompt("parse-v1"),
+                parse = prompt("parse-v2"),
                 parseRetry = prompt("parse-retry-v1"),
                 voice = prompt("voice-v1"),
                 receipt = prompt("receipt-v1"),

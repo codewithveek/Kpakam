@@ -37,7 +37,7 @@ function VirtualList({ entries, reversed, customers, label }: JournalListProps) 
   // eslint-disable-next-line react-hooks/incompatible-library
   const virtualizer = useVirtualizer({ count: entries.length, getScrollElement: () => parent.current, estimateSize: () => 72, overscan: 6 });
   return (
-    <div ref={parent} className="max-h-[70vh] overflow-y-auto rounded-[20px] border border-border bg-surface shadow-card">
+    <div ref={parent} className="max-h-[70vh] overflow-y-auto">
       <ul aria-label={label} className="relative" style={{ height: virtualizer.getTotalSize() }}>
         {virtualizer.getVirtualItems().map((item) => {
           const entry = entries[item.index];
@@ -47,7 +47,7 @@ function VirtualList({ entries, reversed, customers, label }: JournalListProps) 
               key={entry.journal.id}
               ref={virtualizer.measureElement}
               data-index={item.index}
-              className="absolute inset-x-0 border-b border-border"
+              className="absolute inset-x-0 pb-2"
               style={{ transform: `translateY(${item.start}px)` }}
             >
               <JournalRow entry={entry} reversed={reversed.has(entry.journal.id)} customerName={nameOf(entry, customers)} />

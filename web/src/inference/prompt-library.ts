@@ -1,5 +1,5 @@
 import insightsFile from '@contract/prompts/insights-v1.md?raw';
-import parseFile from '@contract/prompts/parse-v1.md?raw';
+import parseFile from '@contract/prompts/parse-v2.md?raw';
 import retryFile from '@contract/prompts/parse-retry-v1.md?raw';
 import receiptFile from '@contract/prompts/receipt-v1.md?raw';
 import summaryFile from '@contract/prompts/summary-v1.md?raw';

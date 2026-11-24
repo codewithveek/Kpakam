@@ -11,8 +11,8 @@ export interface InferenceBadgeProps {
 }
 
 const STYLE: Readonly<Record<BadgeSource, string>> = {
-  on_device: 'bg-device-soft text-device',
-  in_cloud: 'bg-cloud-soft text-cloud',
+  on_device: 'bg-surface-2 text-text',
+  in_cloud: 'bg-surface-2 text-text',
   queued: 'bg-accent-soft text-accent',
 };
 

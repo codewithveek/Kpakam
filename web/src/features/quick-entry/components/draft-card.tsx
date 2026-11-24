@@ -31,14 +31,14 @@ function detailLine(draft: Draft): string {
   return [goods, draft.kind === 'credit_sale' ? null : draft.customerName].filter((p) => p !== null && p !== '').join(' · ');
 }
 
-const iconButton = 'press flex h-11 w-11 items-center justify-center rounded-full text-muted hover-fine:bg-surface-2';
+const iconButton = 'press flex h-11 w-11 items-center justify-center rounded-full bg-surface text-text';
 
 /** One draft in the review list: what it is, how much, and who still owes. Edit or discard before saving. */
 export function DraftCard({ draft, problem, onChange, onDiscard }: DraftCardProps) {
   const [editing, setEditing] = useState(false);
   const detail = detailLine(draft);
   return (
-    <li className="rounded-[16px] bg-bg p-3" data-testid="draft">
+    <li className="rounded-[22px] bg-surface-2 p-4" data-testid="draft">
       <div className="flex items-center gap-3">
         <KindAvatar kind={draft.kind} />
         <div className="min-w-0 flex-1">
@@ -53,7 +53,7 @@ export function DraftCard({ draft, problem, onChange, onDiscard }: DraftCardProp
           {problem}
         </p>
       )}
-      <div className="mt-1 flex justify-end">
+      <div className="mt-3 flex justify-end gap-2">
         <button
           type="button"
           className={iconButton}

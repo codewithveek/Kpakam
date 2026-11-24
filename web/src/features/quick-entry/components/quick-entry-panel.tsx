@@ -1,11 +1,9 @@
-import { useCallback, useRef, useState, type SyntheticEvent } from 'react';
+import { useRef, type SyntheticEvent } from 'react';
 import { useAppStore } from '@/app/app-store';
 import { MESSAGES } from '@/shared/messages/en';
 import { Button } from '@/shared/ui/button';
-import { CameraIcon, SendIcon } from '@/shared/ui/icons';
+import { CameraIcon, MicIcon, SendIcon } from '@/shared/ui/icons';
 import { MAX_NOTE_CHARS, useQuickEntry } from '../hooks/use-quick-entry';
-import { useVoiceEntry } from '../hooks/use-voice-entry';
-import { MicButton } from './mic-button';
 
 const SHOW_COUNT_BELOW = 40;
 
@@ -17,7 +15,7 @@ function ExampleChips({ onPick }: { readonly onPick: (text: string) => void }) {
           key={example.label}
           type="button"
           onClick={() => onPick(example.text)}
-          className="press min-h-10 shrink-0 rounded-full bg-surface-2 px-4 text-sm font-semibold text-text"
+          className="press min-h-10 shrink-0 rounded-full bg-surface-2 px-4 text-[14px] font-medium text-text"
         >
           {example.label}
         </button>
@@ -33,31 +31,32 @@ function Hint({ left }: { readonly left: number }) {
   return <p className={`text-[13px] ${left < 10 ? 'font-semibold text-accent' : 'text-muted'}`}>{MESSAGES.quickEntry.charsLeft(left)}</p>;
 }
 
-/** F1 + F8: type or speak one sentence; Kpakam turns it into drafts. */
+const roundTool = 'press flex h-12 w-12 items-center justify-center rounded-full bg-surface-2 text-text disabled:opacity-40';
+
+/** F1 + F8: type one sentence, or tap the mic to speak it; Kpakam turns it into entries. */
 export function QuickEntryPanel() {
   const { busy, submitText, submitPhoto, prepareModel } = useQuickEntry();
-  const [text, setText] = useState('');
+  const text = useAppStore((s) => s.noteText);
+  const setText = useAppStore((s) => s.setNoteText);
+  const openVoice = useAppStore((s) => s.setVoiceOpen);
   const fileRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const onTranscript = useCallback((transcript: string) => setText(transcript.slice(0, MAX_NOTE_CHARS)), []);
-  const voice = useVoiceEntry(onTranscript);
 
   async function onSubmit(event: SyntheticEvent) {
     event.preventDefault();
     if (await submitText(text)) setText('');
   }
   function pick(example: string) {
-    setText((current) => (current + example).trimStart().slice(0, MAX_NOTE_CHARS));
+    setText((text + example).trimStart().slice(0, MAX_NOTE_CHARS));
     inputRef.current?.focus();
   }
 
   return (
-    <section className="rounded-[24px] border border-border bg-surface p-4 shadow-card">
-      <form onSubmit={(e) => void onSubmit(e)} className="flex flex-col gap-3">
-        <label id="quick-entry-label" htmlFor="quick-entry-input" className="text-[17px] font-semibold">
+    <section className="rounded-[28px] bg-surface p-5">
+      <form onSubmit={(e) => void onSubmit(e)} className="flex flex-col gap-4">
+        <label htmlFor="quick-entry-input" className="sr-only">
           {MESSAGES.quickEntry.label}
         </label>
-        {voice.state.type === 'local' && voice.state.partial !== '' && <p className="text-muted italic">“{voice.state.partial}”</p>}
         <textarea
           id="quick-entry-input"
           ref={inputRef}
@@ -67,10 +66,10 @@ export function QuickEntryPanel() {
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) void onSubmit(e);
           }}
-          rows={2}
+          rows={3}
           maxLength={MAX_NOTE_CHARS}
           placeholder={MESSAGES.quickEntry.placeholder}
-          className="w-full resize-none bg-transparent text-[17px] leading-snug outline-none placeholder:text-muted/80"
+          className="w-full resize-none bg-transparent text-[18px] leading-snug tracking-[-0.01em] outline-none placeholder:text-muted"
         />
         {text === '' ? <ExampleChips onPick={pick} /> : <Hint left={MAX_NOTE_CHARS - text.length} />}
         <input
@@ -87,25 +86,21 @@ export function QuickEntryPanel() {
             e.target.value = '';
           }}
         />
-        <div className="flex items-center justify-between gap-2 border-t border-border pt-3">
-          <MicButton state={voice.state} maxSeconds={voice.maxSeconds} onStart={() => void voice.start()} onStop={voice.stop} disabled={busy} />
-          <div className="flex shrink-0 items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              icon={<CameraIcon />}
-              onClick={() => fileRef.current?.click()}
-              disabled={busy}
-              aria-label={MESSAGES.quickEntry.photo}
-            />
-            <Button
-              type="submit"
-              icon={busy ? <span className="spinner h-4 w-4 rounded-full border-2 border-current border-t-transparent" /> : <SendIcon width={18} height={18} />}
-              disabled={busy || text.trim() === ''}
-            >
-              {MESSAGES.quickEntry.submit}
-            </Button>
-          </div>
+        <div className="flex items-center gap-2">
+          <button type="button" className={roundTool} onClick={() => fileRef.current?.click()} disabled={busy} aria-label={MESSAGES.quickEntry.photo}>
+            <CameraIcon width={22} height={22} />
+          </button>
+          <button type="button" className={roundTool} onClick={() => openVoice(true)} disabled={busy} aria-label={MESSAGES.voice.startButton}>
+            <MicIcon width={22} height={22} />
+          </button>
+          <Button
+            type="submit"
+            className="ml-auto"
+            icon={busy ? <span className="spinner h-4 w-4 rounded-full border-2 border-current border-t-transparent" /> : <SendIcon width={18} height={18} />}
+            disabled={busy || text.trim() === ''}
+          >
+            {MESSAGES.quickEntry.submit}
+          </Button>
         </div>
       </form>
     </section>

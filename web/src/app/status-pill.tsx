@@ -10,7 +10,7 @@ export function StatusPill() {
       role="status"
       data-testid="network-status"
       data-online={online}
-      className={`inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold ${online ? 'bg-device-soft text-device' : 'bg-accent-soft text-accent'}`}
+      className={`inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 text-[13px] font-semibold ${online ? 'border border-border bg-surface text-text' : 'bg-ink text-on-ink'}`}
     >
       {online ? <OnlineIcon width={16} height={16} /> : <OfflineIcon width={16} height={16} />}
       <span>{online ? MESSAGES.status.online : 'Offline'}</span>

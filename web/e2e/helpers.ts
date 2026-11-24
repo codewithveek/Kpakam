@@ -10,7 +10,7 @@ export async function openApp(page: Page, path = '/'): Promise<void> {
 /** Types a note, reads it, and saves every draft. */
 export async function recordNote(page: Page, note: string): Promise<void> {
   await page.getByLabel('What happened?').fill(note);
-  await page.getByRole('button', { name: 'Read it' }).click();
+  await page.getByRole('button', { name: 'Send', exact: true }).click();
   await expect(page.getByTestId('draft').first()).toBeVisible();
   await page.getByRole('button', { name: /^Save/ }).click();
   await expect(page.getByTestId('draft')).toHaveCount(0);

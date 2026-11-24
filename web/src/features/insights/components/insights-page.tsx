@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useAppStore } from '@/app/app-store';
 import { useServices } from '@/app/services';
@@ -6,7 +7,7 @@ import type { QueueReason } from '@/inference/domain/route-decision';
 import { MESSAGES } from '@/shared/messages/en';
 import { Button } from '@/shared/ui/button';
 import { Card } from '@/shared/ui/card';
-import { SendIcon } from '@/shared/ui/icons';
+import { ChevronLeftIcon, SendIcon, SparkIcon } from '@/shared/ui/icons';
 import { PageHeader } from '@/shared/ui/page-header';
 import { useWeekData } from '../hooks/use-week-data';
 
@@ -48,9 +49,16 @@ export function InsightsPage() {
     else showToast(MESSAGES.errors.generic);
   }
 
-  if (!remoteConfig.values().insightsEnabled) return <p>{MESSAGES.insights.disabled}</p>;
+  if (!remoteConfig.values().insightsEnabled) return <p className="rounded-[24px] bg-surface p-6 text-center text-muted">{MESSAGES.insights.disabled}</p>;
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
+      <Link
+        to="/settings"
+        className="press inline-flex min-h-12 items-center gap-1 self-start rounded-full bg-surface pl-3 pr-5 text-[15px] font-semibold text-text"
+      >
+        <ChevronLeftIcon />
+        {MESSAGES.settings.title}
+      </Link>
       <PageHeader title={MESSAGES.insights.title} />
       {held !== null && (
         <Card className="flex flex-col gap-3">
@@ -62,13 +70,15 @@ export function InsightsPage() {
           )}
         </Card>
       )}
-      <Button onClick={() => void generate(false)} disabled={busy}>
+      <Button size="lg" icon={<SparkIcon />} onClick={() => void generate(false)} disabled={busy}>
         {MESSAGES.insights.generate}
       </Button>
       {text !== null && (
         <Card aria-live="polite">
-          <p className="mb-2 text-sm text-muted">{busy ? MESSAGES.quickEntry.working : MESSAGES.insights.cached}</p>
-          <div className="whitespace-pre-wrap leading-relaxed">{text}</div>
+          <p className="mb-3 text-[13px] font-semibold uppercase tracking-[0.08em] text-muted">
+            {busy ? MESSAGES.quickEntry.working : MESSAGES.insights.cached}
+          </p>
+          <div className="whitespace-pre-wrap text-[16px] leading-relaxed">{text}</div>
         </Card>
       )}
     </div>

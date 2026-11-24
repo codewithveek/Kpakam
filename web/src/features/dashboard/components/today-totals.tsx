@@ -6,9 +6,9 @@ import { PhoneIcon } from '@/shared/ui/icons';
 
 function Stat({ label, amount, testId }: { readonly label: string; readonly amount: Kobo; readonly testId: string }) {
   return (
-    <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-      <dt className="text-[13px] font-medium text-white/75">{label}</dt>
-      <dd className="amount truncate text-[17px] font-semibold text-white" data-testid={testId}>
+    <div className="flex min-w-0 flex-col gap-1">
+      <dt className="truncate text-[13px] font-medium text-on-ink-muted">{label}</dt>
+      <dd className="amount truncate text-[17px] font-semibold" data-testid={testId}>
         {formatNaira(amount)}
       </dd>
     </div>
@@ -20,27 +20,27 @@ export interface TodayTotalsProps {
   readonly cloudCallsSaved: number | null;
 }
 
-/** F5 hero: one big number (profit), three small ones, on a solid brand surface (no gradient behind numbers). */
+/** F5: the one black card. Profit is the single big number; sales, expenses, and debts paid back sit below. */
 export function TodayTotals({ totals, cloudCallsSaved }: TodayTotalsProps) {
   return (
-    <section aria-labelledby="hero-label" className="rounded-[24px] bg-primary p-5 text-white shadow-float dark:bg-[var(--hero-from)]">
-      <p id="hero-label" className="text-[15px] font-medium text-white/80">
+    <section aria-labelledby="hero-label" className="rounded-[32px] bg-ink p-6 text-on-ink">
+      <p id="hero-label" className="text-[15px] font-medium text-on-ink-muted">
         {MESSAGES.dashboard.profitToday}
       </p>
-      <p className="amount mt-1 text-[40px] font-bold leading-none tracking-[-0.03em]" data-testid="total-profit">
+      <p className="amount display mt-3 text-[48px] font-bold" data-testid="total-profit">
         {formatNaira(totals.profit)}
       </p>
-      <dl className="mt-5 flex gap-4 border-t border-white/15 pt-4">
+      <dl className="mt-6 grid grid-cols-3 gap-3 border-t border-ink-line pt-5">
         <Stat label={MESSAGES.dashboard.sales} amount={totals.sales} testId="total-sales" />
         <Stat label={MESSAGES.dashboard.expenses} amount={totals.expenses} testId="total-expenses" />
-        <Stat label={MESSAGES.dashboard.debtCollected} amount={totals.debtCollected} testId="total-collected" />
+        <Stat label={MESSAGES.dashboard.paidBack} amount={totals.debtCollected} testId="total-collected" />
       </dl>
       {cloudCallsSaved !== null && (
         <p
-          className="mt-4 inline-flex min-h-8 items-center gap-1.5 rounded-full bg-white/12 px-3 text-[13px] font-semibold text-white"
+          className="mt-5 inline-flex min-h-8 items-center gap-1.5 rounded-full border border-ink-line px-3 text-[12px] font-semibold text-on-ink-muted"
           data-testid="calls-avoided"
         >
-          <PhoneIcon width={15} height={15} />
+          <PhoneIcon width={14} height={14} />
           <span>{MESSAGES.inference.avoided(cloudCallsSaved)}</span>
         </p>
       )}

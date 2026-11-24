@@ -1,7 +1,8 @@
-import { Link, useNavigate } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import type { ComponentType, SVGProps } from 'react';
 import { MESSAGES } from '@/shared/messages/en';
-import { EditIcon, HomeIcon, ListIcon, PeopleIcon, SettingsIcon } from '@/shared/ui/icons';
+import { HomeIcon, ListIcon, MicIcon, PeopleIcon, SettingsIcon } from '@/shared/ui/icons';
+import { useAppStore } from './app-store';
 
 type NavPath = '/' | '/history' | '/customers' | '/settings';
 type IconType = ComponentType<SVGProps<SVGSVGElement>>;
@@ -15,53 +16,50 @@ const RIGHT: readonly { to: NavPath; label: string; Icon: IconType }[] = [
   { to: '/settings', label: MESSAGES.nav.settings, Icon: SettingsIcon },
 ];
 
+const ITEM = 'press flex h-16 w-full flex-col items-center justify-center gap-0.5 text-[12px] font-medium';
+
 function Tab({ to, label, Icon }: { readonly to: NavPath; readonly label: string; readonly Icon: IconType }) {
   return (
-    <li className="flex-1">
+    <li>
       <Link
         to={to}
         activeOptions={{ exact: to === '/' }}
         activeProps={{ 'aria-current': 'page' }}
-        className="group press flex min-h-16 flex-col items-center justify-center gap-1 text-[12px] font-semibold text-muted aria-[current=page]:text-text"
+        className={`${ITEM} text-muted aria-[current=page]:font-semibold aria-[current=page]:text-text`}
       >
-        <span className="flex h-8 w-14 items-center justify-center rounded-full transition-colors duration-200 group-aria-[current=page]:bg-device-soft group-aria-[current=page]:text-device">
+        <span className="flex h-8 items-center">
           <Icon width={22} height={22} />
         </span>
-        <span className="max-w-full truncate px-1">{label}</span>
+        <span>{label}</span>
       </Link>
     </li>
   );
 }
 
-/** Focuses the note box on Today: the one action traders take most. */
-function RecordButton() {
-  const navigate = useNavigate();
-  async function record() {
-    await navigate({ to: '/' });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    document.getElementById('quick-entry-input')?.focus();
-  }
+/** Speak sits in the middle of the bar; its icon is the one black tile, so the main action is easy to find. */
+function SpeakButton() {
+  const open = useAppStore((s) => s.setVoiceOpen);
   return (
-    <li className="flex flex-1 justify-center">
-      <button type="button" onClick={() => void record()} className="press -mt-5 flex flex-col items-center gap-1 text-[12px] font-semibold text-text">
-        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-on-primary shadow-float">
-          <EditIcon width={24} height={24} />
+    <li>
+      <button type="button" onClick={() => open(true)} className={`${ITEM} text-text`}>
+        <span className="flex h-8 w-12 items-center justify-center rounded-full bg-ink text-on-ink">
+          <MicIcon width={18} height={18} />
         </span>
-        {MESSAGES.nav.record}
+        <span className="font-semibold">{MESSAGES.nav.record}</span>
       </button>
     </li>
   );
 }
 
-/** Bottom navigation: four places plus a labelled centre action (never an icon-only "+"). */
+/** A docked, full-width bottom bar: five equal slots with short labels, so nothing ever squeezes. */
 export function BottomNav() {
   return (
-    <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)]">
-      <ul className="mx-auto flex max-w-2xl items-end px-2">
+    <nav aria-label={MESSAGES.nav.label} className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)]">
+      <ul className="mx-auto grid max-w-2xl grid-cols-5 px-2">
         {LEFT.map((item) => (
           <Tab key={item.to} {...item} />
         ))}
-        <RecordButton />
+        <SpeakButton />
         {RIGHT.map((item) => (
           <Tab key={item.to} {...item} />
         ))}
