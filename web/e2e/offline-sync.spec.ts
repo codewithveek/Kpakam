@@ -19,7 +19,6 @@ test('journey 1: record a sale offline, on device, then it syncs on reconnect (F
   await context.setOffline(false);
   await expect(page.getByTestId('pending-sync')).toHaveCount(0, { timeout: 10_000 });
   await expect(page.getByTestId('journal-row')).toHaveCount(1);
-  await expect(page.getByTestId('calls-avoided')).toHaveText('1 note read free on your phone this week');
 });
 
 test('journey 1b: a reload keeps offline entries and does not duplicate them', async ({ page, context }) => {

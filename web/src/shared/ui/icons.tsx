@@ -56,16 +56,6 @@ export const ClockIcon = (p: IconProps) => (
     <path d="M12 7v5l3 2" />
   </Icon>
 );
-export const OfflineIcon = (p: IconProps) => (
-  <Icon {...p}>
-    <path d="M2 8.5a15 15 0 0 1 4-2.6M22 8.5A15 15 0 0 0 11 5M5 12.5a10 10 0 0 1 4-2.2M19 12.5a10 10 0 0 0-3-1.8M8.5 16a5 5 0 0 1 7 0M12 20h.01M3 3l18 18" />
-  </Icon>
-);
-export const OnlineIcon = (p: IconProps) => (
-  <Icon {...p}>
-    <path d="M2 8.5a15 15 0 0 1 20 0M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M12 20h.01" />
-  </Icon>
-);
 export const SyncIcon = (p: IconProps) => (
   <Icon {...p}>
     <path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16M20 20v-4h-4" />

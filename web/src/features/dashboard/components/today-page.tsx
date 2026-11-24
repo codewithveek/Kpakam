@@ -8,7 +8,6 @@ import { SparkIcon } from '@/shared/ui/icons';
 import { SectionHeader } from '@/shared/ui/list';
 import { PageHeader } from '@/shared/ui/page-header';
 import { useDaySummary } from '../hooks/use-day-summary';
-import { useWeeklyStats } from '../hooks/use-weekly-stats';
 import { TodayTotals } from './today-totals';
 
 const RECENT = 5;
@@ -21,11 +20,10 @@ export function TodayPage() {
   const { byId } = useCustomers();
   const totals = useMemo(() => computeDayTotals(view.entries.map((e) => e.journal)), [view.entries]);
   const summary = useDaySummary(totals);
-  const stats = useWeeklyStats();
   return (
     <div className="flex flex-col gap-5">
       <PageHeader title={`${MESSAGES.greeting(new Date().getHours())},`} subtitle={formatLagosDate(today)} />
-      <TodayTotals totals={totals} cloudCallsSaved={stats?.cloudCallsAvoided ?? null} />
+      <TodayTotals totals={totals} />
       <QuickEntryPanel />
       <JobList jobs={jobs} />
       <section aria-labelledby="recent-heading" className="flex flex-col gap-2">

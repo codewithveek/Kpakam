@@ -2,7 +2,6 @@ import type { DayTotals } from '@/features/ledger';
 import { formatNaira } from '@/shared/money/format';
 import type { Kobo } from '@/shared/money/kobo';
 import { MESSAGES } from '@/shared/messages/en';
-import { PhoneIcon } from '@/shared/ui/icons';
 
 function Stat({ label, amount, testId }: { readonly label: string; readonly amount: Kobo; readonly testId: string }) {
   return (
@@ -17,11 +16,10 @@ function Stat({ label, amount, testId }: { readonly label: string; readonly amou
 
 export interface TodayTotalsProps {
   readonly totals: DayTotals;
-  readonly cloudCallsSaved: number | null;
 }
 
 /** F5: the one black card. Profit is the single big number; sales, expenses, and debts paid back sit below. */
-export function TodayTotals({ totals, cloudCallsSaved }: TodayTotalsProps) {
+export function TodayTotals({ totals }: TodayTotalsProps) {
   return (
     <section aria-labelledby="hero-label" className="rounded-[32px] bg-ink p-6 text-on-ink">
       <p id="hero-label" className="text-[15px] font-medium text-on-ink-muted">
@@ -35,15 +33,6 @@ export function TodayTotals({ totals, cloudCallsSaved }: TodayTotalsProps) {
         <Stat label={MESSAGES.dashboard.expenses} amount={totals.expenses} testId="total-expenses" />
         <Stat label={MESSAGES.dashboard.paidBack} amount={totals.debtCollected} testId="total-collected" />
       </dl>
-      {cloudCallsSaved !== null && (
-        <p
-          className="mt-5 inline-flex min-h-8 items-center gap-1.5 rounded-full border border-ink-line px-3 text-[12px] font-semibold text-on-ink-muted"
-          data-testid="calls-avoided"
-        >
-          <PhoneIcon width={14} height={14} />
-          <span>{MESSAGES.inference.avoided(cloudCallsSaved)}</span>
-        </p>
-      )}
     </section>
   );
 }

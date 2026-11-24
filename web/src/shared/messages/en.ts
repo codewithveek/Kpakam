@@ -112,7 +112,6 @@ export const MESSAGES = {
       CLOUD_DISABLED: 'Online reading is paused',
       RATE_LIMITED: 'Busy, will try again soon',
     },
-    avoided: (n: number) => `${n} ${n === 1 ? 'note' : 'notes'} read free on your phone this week`,
     downloading: (pct: number) => `Getting your phone ready… ${pct}%`,
   },
   dashboard: {
@@ -180,9 +179,6 @@ export const MESSAGES = {
     cancel: 'Cancel',
     retry: 'Try again',
     estimatedSize: (kb: number) => `about ${kb} KB of data`,
-    stats: 'Your numbers this week',
-    onDeviceShare: 'Read free on your phone',
-    cloudCalls: 'Read online',
     account: 'Account',
     anonymous: 'You are using Kpakam without signing in. Add your Google account to keep your records if you change phones.',
     linkGoogle: 'Add my Google account',
@@ -192,7 +188,7 @@ export const MESSAGES = {
     confirmDelete: 'This deletes every record. It cannot be undone. Type DELETE to confirm.',
     insights: 'Weekly report',
     insightsHelp: 'Best sellers, money in and out, and who to remind. Uses data.',
-    sections: { data: 'Data', voice: 'Voice', privacy: 'Privacy', week: 'This week', reports: 'Reports', account: 'Account' },
+    sections: { data: 'Data', voice: 'Voice', privacy: 'Privacy', reports: 'Reports', account: 'Account' },
   },
   insights: {
     title: 'Weekly report',

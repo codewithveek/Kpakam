@@ -9,7 +9,6 @@ import { PageHeader } from '@/shared/ui/page-header';
 import type { TraderSettings } from '../domain/settings';
 import { AccountPanel } from './account-panel';
 import { LanguageSheet, VOICE_OPTIONS } from './language-sheet';
-import { StatsPanel } from './stats-panel';
 import { ToggleRow } from './toggle-row';
 
 const S = MESSAGES.settings.sections;
@@ -63,8 +62,6 @@ export function SettingsPage() {
           />
         </li>
       </ListPanel>
-      <SectionHeader title={S.week} />
-      <StatsPanel />
       <SectionHeader title={S.reports} />
       <Link to="/insights" className="press flex min-h-[72px] items-center gap-3 rounded-[24px] bg-surface px-4">
         <span className={TILE}>

@@ -63,8 +63,6 @@ Then try these:
 | Mixed speech          | Settings > Language you speak: **Any**. Speak a mixed sentence. | Online · Mixed languages heard           |
 | Offline queue         | Turn off Wi-Fi in a browser without Gemini Nano. Type a note.   | Waiting for network                      |
 
-Settings > **This week** shows how many notes were read free on the phone.
-
 **Hosted app:** add the link here after the first deploy (see
 [`docs/runbook.md`](docs/runbook.md)).
 
