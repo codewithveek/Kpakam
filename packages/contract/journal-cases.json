@@ -1,0 +1,312 @@
+{
+  "version": "ledger-v1",
+  "note": "In expected lines, \"receivable\" means receivable:<customerId>. \"customer\": true means the draft's customer resolves to customerId; false means no customer.",
+  "customerId": "01JDX6M8Z9Q4W2E3R5T7Y9V1K0",
+  "cases": [
+    {
+      "name": "cash sale",
+      "draft": {
+        "kind": "sale",
+        "item": "rice",
+        "quantity": 3,
+        "unit": "bag",
+        "totalNaira": 45000,
+        "confidence": 0.9
+      },
+      "customer": false,
+      "expected": {
+        "kind": "sale",
+        "description": "3 bag rice",
+        "lines": [
+          ["cash", 4500000],
+          ["sales", -4500000]
+        ]
+      }
+    },
+    {
+      "name": "expense",
+      "draft": {
+        "kind": "expense",
+        "item": "transport",
+        "totalNaira": 1500,
+        "confidence": 0.9
+      },
+      "customer": false,
+      "expected": {
+        "kind": "expense",
+        "description": "transport",
+        "lines": [
+          ["expenses", 150000],
+          ["cash", -150000]
+        ]
+      }
+    },
+    {
+      "name": "credit sale, part paid (PRD example)",
+      "draft": {
+        "kind": "credit_sale",
+        "item": "rice",
+        "quantity": 3,
+        "unit": "bag",
+        "totalNaira": 45000,
+        "paidNaira": 35000,
+        "customerName": "Mama Bisi",
+        "confidence": 0.92
+      },
+      "customer": true,
+      "expected": {
+        "kind": "credit_sale",
+        "description": "3 bag rice",
+        "lines": [
+          ["cash", 3500000],
+          ["receivable", 1000000],
+          ["sales", -4500000]
+        ]
+      }
+    },
+    {
+      "name": "credit sale, nothing paid",
+      "draft": {
+        "kind": "credit_sale",
+        "item": "milk",
+        "totalNaira": 2000,
+        "paidNaira": 0,
+        "customerName": "Oga Emeka",
+        "confidence": 0.8
+      },
+      "customer": true,
+      "expected": {
+        "kind": "credit_sale",
+        "description": "milk",
+        "lines": [
+          ["receivable", 200000],
+          ["sales", -200000]
+        ]
+      }
+    },
+    {
+      "name": "credit sale, paidNaira missing means nothing paid",
+      "draft": {
+        "kind": "credit_sale",
+        "item": "garri",
+        "totalNaira": 3000,
+        "customerName": "Mama Tola",
+        "confidence": 0.8
+      },
+      "customer": true,
+      "expected": {
+        "kind": "credit_sale",
+        "description": "garri",
+        "lines": [
+          ["receivable", 300000],
+          ["sales", -300000]
+        ]
+      }
+    },
+    {
+      "name": "credit sale fully paid becomes a sale",
+      "draft": {
+        "kind": "credit_sale",
+        "item": "egg",
+        "quantity": 2,
+        "unit": "crate",
+        "totalNaira": 9000,
+        "paidNaira": 9000,
+        "customerName": "Iya Bisi",
+        "confidence": 0.8
+      },
+      "customer": true,
+      "expected": {
+        "kind": "sale",
+        "description": "2 crate egg",
+        "lines": [
+          ["cash", 900000],
+          ["sales", -900000]
+        ]
+      }
+    },
+    {
+      "name": "repayment",
+      "draft": {
+        "kind": "repayment",
+        "totalNaira": 5000,
+        "customerName": "Tunde",
+        "confidence": 0.95
+      },
+      "customer": true,
+      "expected": {
+        "kind": "repayment",
+        "description": "Repayment",
+        "lines": [
+          ["cash", 500000],
+          ["receivable", -500000]
+        ]
+      }
+    },
+    {
+      "name": "decimal naira rounds half up to kobo",
+      "draft": {
+        "kind": "sale",
+        "item": "sweet",
+        "totalNaira": 12.345,
+        "confidence": 0.9
+      },
+      "customer": false,
+      "expected": {
+        "kind": "sale",
+        "description": "sweet",
+        "lines": [
+          ["cash", 1235],
+          ["sales", -1235]
+        ]
+      }
+    },
+    {
+      "name": "decimal rounding uses the decimal value, not binary floating point",
+      "draft": {
+        "kind": "expense",
+        "item": "pure water",
+        "totalNaira": 1.005,
+        "confidence": 0.9
+      },
+      "customer": false,
+      "expected": {
+        "kind": "expense",
+        "description": "pure water",
+        "lines": [
+          ["expenses", 101],
+          ["cash", -101]
+        ]
+      }
+    },
+    {
+      "name": "fractional quantity in description",
+      "draft": {
+        "kind": "sale",
+        "item": "palm oil",
+        "quantity": 2.5,
+        "unit": "litre",
+        "totalNaira": 5000,
+        "confidence": 0.9
+      },
+      "customer": false,
+      "expected": {
+        "kind": "sale",
+        "description": "2.5 litre palm oil",
+        "lines": [
+          ["cash", 500000],
+          ["sales", -500000]
+        ]
+      }
+    },
+    {
+      "name": "empty description falls back to kind label",
+      "draft": {
+        "kind": "credit_sale",
+        "totalNaira": 1000,
+        "paidNaira": 200,
+        "customerName": "Ada",
+        "confidence": 0.7
+      },
+      "customer": true,
+      "expected": {
+        "kind": "credit_sale",
+        "description": "Credit sale",
+        "lines": [
+          ["cash", 20000],
+          ["receivable", 80000],
+          ["sales", -100000]
+        ]
+      }
+    },
+    {
+      "name": "sale keeps customer link but no receivable",
+      "draft": {
+        "kind": "sale",
+        "item": "bread",
+        "totalNaira": 1200,
+        "customerName": "Ada",
+        "confidence": 0.9
+      },
+      "customer": true,
+      "expected": {
+        "kind": "sale",
+        "description": "bread",
+        "lines": [
+          ["cash", 120000],
+          ["sales", -120000]
+        ]
+      }
+    },
+    {
+      "name": "paidNaira ignored on a sale",
+      "draft": {
+        "kind": "sale",
+        "item": "bread",
+        "totalNaira": 1200,
+        "paidNaira": 500,
+        "confidence": 0.9
+      },
+      "customer": false,
+      "expected": {
+        "kind": "sale",
+        "description": "bread",
+        "lines": [
+          ["cash", 120000],
+          ["sales", -120000]
+        ]
+      }
+    },
+    {
+      "name": "repayment without customer",
+      "draft": {
+        "kind": "repayment",
+        "totalNaira": 5000,
+        "confidence": 0.9
+      },
+      "customer": false,
+      "expected": {
+        "error": "CUSTOMER_REQUIRED"
+      }
+    },
+    {
+      "name": "credit sale without customer",
+      "draft": {
+        "kind": "credit_sale",
+        "totalNaira": 5000,
+        "paidNaira": 1000,
+        "confidence": 0.9
+      },
+      "customer": false,
+      "expected": {
+        "error": "CUSTOMER_REQUIRED"
+      }
+    },
+    {
+      "name": "paid more than total",
+      "draft": {
+        "kind": "credit_sale",
+        "totalNaira": 5000,
+        "paidNaira": 6000,
+        "customerName": "Ada",
+        "confidence": 0.9
+      },
+      "customer": true,
+      "expected": {
+        "error": "PAID_EXCEEDS_TOTAL"
+      }
+    },
+    {
+      "name": "total rounds to zero kobo",
+      "draft": {
+        "kind": "sale",
+        "totalNaira": 0.004,
+        "confidence": 0.9
+      },
+      "customer": false,
+      "expected": {
+        "error": "AMOUNT_TOO_SMALL"
+      }
+    }
+  ]
+}

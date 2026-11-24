@@ -1,0 +1,65 @@
+# Builds on the detekt default config. Only the differences live here.
+build:
+  maxIssues: 0
+
+complexity:
+  # detekt reports at or above the threshold; the PRD limits are "at most".
+  LongMethod:
+    threshold: 41
+  CyclomaticComplexMethod:
+    threshold: 11
+    # An exhaustive `when` that maps an enum to a label is not complex.
+    ignoreSimpleWhenEntries: true
+  NestedBlockDepth:
+    threshold: 4
+  LongParameterList:
+    functionThreshold: 7
+    constructorThreshold: 9
+    ignoreDefaultParameters: true
+    ignoreAnnotated: ['Composable', 'Inject']
+  TooManyFunctions:
+    thresholdInFiles: 20
+    # A ViewModel exposes one function per user intent.
+    thresholdInClasses: 20
+    thresholdInInterfaces: 15
+    thresholdInObjects: 15
+    ignorePrivate: true
+
+naming:
+  FunctionNaming:
+    ignoreAnnotated: ['Composable', 'TestFactory', 'Test']
+  TopLevelPropertyNaming:
+    constantPattern: '[A-Z][_A-Z0-9]*'
+
+style:
+  MagicNumber:
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreAnnotated: ['Composable', 'Preview']
+    excludes: ['**/test/**', '**/shared/ui/**']
+  MaxLineLength:
+    maxLineLength: 120
+  ReturnCount:
+    max: 4
+    excludeGuardClauses: true
+  UnusedPrivateMember:
+    ignoreAnnotated: ['Preview']
+  ForbiddenComment:
+    active: false
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: true
+    excludes: ['**/platform/**', '**/inference/**']
+  SwallowedException:
+    # Adapters turn SDK exceptions into typed results on purpose.
+    excludes: ['**/platform/**', '**/inference/**']
+    # Invalid model output is expected data, reported as a validation error.
+    ignoredExceptionTypes:
+      - InterruptedException
+      - MalformedURLException
+      - NumberFormatException
+      - ParseException
+      - SerializationException
+      # A Firestore cache miss is reported as an exception; it means "not cached".
+      - FirebaseFirestoreException

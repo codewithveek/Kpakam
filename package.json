@@ -1,0 +1,36 @@
+{
+  "name": "kpakam",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Offline-first sales and debt ledger for Nigerian market traders, with hybrid on-device and cloud AI.",
+  "license": "Apache-2.0",
+  "workspaces": [
+    "packages/contract",
+    "web",
+    "firebase"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "check:contract": "npm run check -w @kpakam/contract",
+    "dev": "npm run dev -w @kpakam/web",
+    "build": "npm run build -w @kpakam/web",
+    "typecheck": "npm run typecheck -w @kpakam/web",
+    "lint": "npm run lint -w @kpakam/web",
+    "test": "npm run check:contract && npm run test -w @kpakam/web",
+    "test:rules": "npm run test -w @kpakam/firebase",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "firebase-tools": "^15.37.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.2",
+    "prettier": "^3.10.1"
+  },
+  "type": "module"
+}

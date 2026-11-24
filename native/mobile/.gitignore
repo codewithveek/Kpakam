@@ -1,0 +1,14 @@
+# Gradle and build output
+.gradle/
+build/
+.kotlin/
+# Local machine settings (SDK path, App Check debug token)
+local.properties
+# Firebase client config is per developer and is never committed
+app/google-services.json
+# IDE
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/

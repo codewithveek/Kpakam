@@ -1,0 +1,713 @@
+{
+  "version": "routing-v2",
+  "defaultSignals": {
+    "task": "parse_text",
+    "chars": 40,
+    "languageScore": 0,
+    "online": true,
+    "cloudEnabled": true,
+    "dataSaver": false,
+    "approved": false,
+    "deviceModel": "available",
+    "battery": null
+  },
+  "text": [
+    {
+      "name": "plain English sale, capable device, online",
+      "signals": {},
+      "expected": {
+        "target": "device",
+        "reason": "DEFAULT_DEVICE",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "plain English sale, airplane mode",
+      "signals": {
+        "online": false
+      },
+      "expected": {
+        "target": "device",
+        "reason": "DEFAULT_DEVICE",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "image online",
+      "signals": {
+        "task": "parse_image",
+        "chars": 0
+      },
+      "expected": {
+        "target": "cloud",
+        "reason": "IMAGE_INPUT",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "image offline queues",
+      "signals": {
+        "task": "parse_image",
+        "chars": 0,
+        "online": false
+      },
+      "expected": {
+        "target": "queue",
+        "reason": "IMAGE_INPUT",
+        "confidence": "normal",
+        "queueReason": "OFFLINE"
+      }
+    },
+    {
+      "name": "image with data-saver queues until Send now",
+      "signals": {
+        "task": "parse_image",
+        "chars": 0,
+        "dataSaver": true
+      },
+      "expected": {
+        "target": "queue",
+        "reason": "IMAGE_INPUT",
+        "confidence": "normal",
+        "queueReason": "DATA_SAVER"
+      }
+    },
+    {
+      "name": "image with data-saver, approved by trader",
+      "signals": {
+        "task": "parse_image",
+        "chars": 0,
+        "dataSaver": true,
+        "approved": true
+      },
+      "expected": {
+        "target": "cloud",
+        "reason": "IMAGE_INPUT",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "image offline and data-saver: offline wins",
+      "signals": {
+        "task": "parse_image",
+        "chars": 0,
+        "dataSaver": true,
+        "online": false
+      },
+      "expected": {
+        "target": "queue",
+        "reason": "IMAGE_INPUT",
+        "confidence": "normal",
+        "queueReason": "OFFLINE"
+      }
+    },
+    {
+      "name": "image with cloud kill switch",
+      "signals": {
+        "task": "parse_image",
+        "chars": 0,
+        "cloudEnabled": false
+      },
+      "expected": {
+        "target": "queue",
+        "reason": "IMAGE_INPUT",
+        "confidence": "normal",
+        "queueReason": "CLOUD_DISABLED"
+      }
+    },
+    {
+      "name": "image wins over unavailable device model",
+      "signals": {
+        "task": "parse_image",
+        "chars": 0,
+        "deviceModel": "unavailable"
+      },
+      "expected": {
+        "target": "cloud",
+        "reason": "IMAGE_INPUT",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "insights on mobile data runs in cloud",
+      "signals": {
+        "task": "insights",
+        "chars": 0
+      },
+      "expected": {
+        "target": "cloud",
+        "reason": "LONG_CONTEXT",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "insights with data-saver waits",
+      "signals": {
+        "task": "insights",
+        "chars": 0,
+        "dataSaver": true
+      },
+      "expected": {
+        "target": "queue",
+        "reason": "LONG_CONTEXT",
+        "confidence": "normal",
+        "queueReason": "DATA_SAVER"
+      }
+    },
+    {
+      "name": "insights offline queues",
+      "signals": {
+        "task": "insights",
+        "chars": 0,
+        "online": false
+      },
+      "expected": {
+        "target": "queue",
+        "reason": "LONG_CONTEXT",
+        "confidence": "normal",
+        "queueReason": "OFFLINE"
+      }
+    },
+    {
+      "name": "device model unavailable, online",
+      "signals": {
+        "deviceModel": "unavailable"
+      },
+      "expected": {
+        "target": "cloud",
+        "reason": "DEVICE_UNAVAILABLE",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "device model downloading, online",
+      "signals": {
+        "deviceModel": "downloading"
+      },
+      "expected": {
+        "target": "cloud",
+        "reason": "DEVICE_UNAVAILABLE",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "device model downloadable, online",
+      "signals": {
+        "deviceModel": "downloadable"
+      },
+      "expected": {
+        "target": "cloud",
+        "reason": "DEVICE_UNAVAILABLE",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "device model unavailable, offline queues",
+      "signals": {
+        "deviceModel": "unavailable",
+        "online": false
+      },
+      "expected": {
+        "target": "queue",
+        "reason": "DEVICE_UNAVAILABLE",
+        "confidence": "normal",
+        "queueReason": "OFFLINE"
+      }
+    },
+    {
+      "name": "device model unavailable, cloud disabled",
+      "signals": {
+        "deviceModel": "unavailable",
+        "cloudEnabled": false
+      },
+      "expected": {
+        "target": "queue",
+        "reason": "DEVICE_UNAVAILABLE",
+        "confidence": "normal",
+        "queueReason": "CLOUD_DISABLED"
+      }
+    },
+    {
+      "name": "data-saver does not hold text parsing",
+      "signals": {
+        "deviceModel": "unavailable",
+        "dataSaver": true
+      },
+      "expected": {
+        "target": "cloud",
+        "reason": "DEVICE_UNAVAILABLE",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "Pidgin online goes to cloud",
+      "signals": {
+        "languageScore": 0.6
+      },
+      "expected": {
+        "target": "cloud",
+        "reason": "LANGUAGE",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "Pidgin offline tries device with low confidence",
+      "signals": {
+        "languageScore": 0.6,
+        "online": false
+      },
+      "expected": {
+        "target": "device",
+        "reason": "LANGUAGE",
+        "confidence": "low",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "Pidgin with cloud disabled tries device with low confidence",
+      "signals": {
+        "languageScore": 0.6,
+        "cloudEnabled": false
+      },
+      "expected": {
+        "target": "device",
+        "reason": "LANGUAGE",
+        "confidence": "low",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "score equal to threshold stays on device",
+      "signals": {
+        "languageScore": 0.35
+      },
+      "expected": {
+        "target": "device",
+        "reason": "DEFAULT_DEVICE",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "score just above threshold goes to cloud",
+      "signals": {
+        "languageScore": 0.36
+      },
+      "expected": {
+        "target": "cloud",
+        "reason": "LANGUAGE",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "custom threshold from Remote Config",
+      "signals": {
+        "languageScore": 0.36
+      },
+      "config": {
+        "route_language_threshold": 0.5
+      },
+      "expected": {
+        "target": "device",
+        "reason": "DEFAULT_DEVICE",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "language check runs before length check",
+      "signals": {
+        "languageScore": 0.9,
+        "chars": 400
+      },
+      "expected": {
+        "target": "cloud",
+        "reason": "LANGUAGE",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "long note online goes to cloud",
+      "signals": {
+        "chars": 281
+      },
+      "expected": {
+        "target": "cloud",
+        "reason": "TOO_LONG",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "note at the limit stays on device",
+      "signals": {
+        "chars": 280
+      },
+      "expected": {
+        "target": "device",
+        "reason": "DEFAULT_DEVICE",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "long note offline runs on device",
+      "signals": {
+        "chars": 500,
+        "online": false
+      },
+      "expected": {
+        "target": "device",
+        "reason": "TOO_LONG",
+        "confidence": "low",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "low battery, not charging, online",
+      "signals": {
+        "battery": {
+          "level": 0.1,
+          "charging": false
+        }
+      },
+      "expected": {
+        "target": "cloud",
+        "reason": "LOW_BATTERY",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "low battery while charging stays on device",
+      "signals": {
+        "battery": {
+          "level": 0.1,
+          "charging": true
+        }
+      },
+      "expected": {
+        "target": "device",
+        "reason": "DEFAULT_DEVICE",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "low battery offline stays on device",
+      "signals": {
+        "battery": {
+          "level": 0.05,
+          "charging": false
+        },
+        "online": false
+      },
+      "expected": {
+        "target": "device",
+        "reason": "DEFAULT_DEVICE",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "battery at the limit stays on device",
+      "signals": {
+        "battery": {
+          "level": 0.15,
+          "charging": false
+        }
+      },
+      "expected": {
+        "target": "device",
+        "reason": "DEFAULT_DEVICE",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "summary on capable device",
+      "signals": {
+        "task": "summary",
+        "chars": 120
+      },
+      "expected": {
+        "target": "device",
+        "reason": "DEFAULT_DEVICE",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "summary without device model goes to cloud",
+      "signals": {
+        "task": "summary",
+        "chars": 120,
+        "deviceModel": "unavailable"
+      },
+      "expected": {
+        "target": "cloud",
+        "reason": "DEVICE_UNAVAILABLE",
+        "confidence": "normal",
+        "queueReason": null
+      }
+    }
+  ],
+  "speech": [
+    {
+      "name": "auto voice, local speech: listen on the phone",
+      "signals": {
+        "voiceLanguage": "auto",
+        "localSpeech": "available",
+        "online": true,
+        "cloudEnabled": true
+      },
+      "expected": {
+        "target": "device",
+        "reason": "SPEECH_DEVICE",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "auto voice, local speech, offline: still listen on the phone",
+      "signals": {
+        "voiceLanguage": "auto",
+        "localSpeech": "available",
+        "online": false,
+        "cloudEnabled": true
+      },
+      "expected": {
+        "target": "device",
+        "reason": "SPEECH_DEVICE",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "auto voice, no local speech: read online",
+      "signals": {
+        "voiceLanguage": "auto",
+        "localSpeech": "unavailable",
+        "online": true,
+        "cloudEnabled": true
+      },
+      "expected": {
+        "target": "cloud",
+        "reason": "SPEECH_CLOUD",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "auto voice, no local speech, offline: keep the clip",
+      "signals": {
+        "voiceLanguage": "auto",
+        "localSpeech": "unavailable",
+        "online": false,
+        "cloudEnabled": true
+      },
+      "expected": {
+        "target": "queue",
+        "reason": "SPEECH_CLOUD",
+        "queueReason": "OFFLINE"
+      }
+    },
+    {
+      "name": "mixed languages heard: send the clip online",
+      "signals": {
+        "voiceLanguage": "auto",
+        "localSpeech": "available",
+        "online": true,
+        "cloudEnabled": true,
+        "mixedHeard": true
+      },
+      "expected": {
+        "target": "cloud",
+        "reason": "SPEECH_MIXED",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "mixed languages heard, offline: keep the clip",
+      "signals": {
+        "voiceLanguage": "auto",
+        "localSpeech": "available",
+        "online": false,
+        "cloudEnabled": true,
+        "mixedHeard": true
+      },
+      "expected": {
+        "target": "queue",
+        "reason": "SPEECH_MIXED",
+        "queueReason": "OFFLINE"
+      }
+    },
+    {
+      "name": "mixed languages heard, online reading paused",
+      "signals": {
+        "voiceLanguage": "auto",
+        "localSpeech": "available",
+        "online": true,
+        "cloudEnabled": false,
+        "mixedHeard": true
+      },
+      "expected": {
+        "target": "queue",
+        "reason": "SPEECH_MIXED",
+        "queueReason": "CLOUD_DISABLED"
+      }
+    },
+    {
+      "name": "English voice with local speech",
+      "signals": {
+        "voiceLanguage": "en",
+        "localSpeech": "available",
+        "online": true,
+        "cloudEnabled": true
+      },
+      "expected": {
+        "target": "device",
+        "reason": "SPEECH_DEVICE",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "English voice with local speech, offline",
+      "signals": {
+        "voiceLanguage": "en",
+        "localSpeech": "available",
+        "online": false,
+        "cloudEnabled": true
+      },
+      "expected": {
+        "target": "device",
+        "reason": "SPEECH_DEVICE",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "English voice, local speech still downloading",
+      "signals": {
+        "voiceLanguage": "en",
+        "localSpeech": "downloading",
+        "online": true,
+        "cloudEnabled": true
+      },
+      "expected": {
+        "target": "cloud",
+        "reason": "SPEECH_CLOUD",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "Pidgin voice online",
+      "signals": {
+        "voiceLanguage": "pcm_yo",
+        "localSpeech": "available",
+        "online": true,
+        "cloudEnabled": true
+      },
+      "expected": {
+        "target": "cloud",
+        "reason": "SPEECH_CLOUD",
+        "queueReason": null
+      }
+    },
+    {
+      "name": "Pidgin voice offline queues the clip",
+      "signals": {
+        "voiceLanguage": "pcm_yo",
+        "localSpeech": "available",
+        "online": false,
+        "cloudEnabled": true
+      },
+      "expected": {
+        "target": "queue",
+        "reason": "SPEECH_CLOUD",
+        "queueReason": "OFFLINE"
+      }
+    },
+    {
+      "name": "no local speech, offline queues the clip",
+      "signals": {
+        "voiceLanguage": "en",
+        "localSpeech": "unavailable",
+        "online": false,
+        "cloudEnabled": true
+      },
+      "expected": {
+        "target": "queue",
+        "reason": "SPEECH_CLOUD",
+        "queueReason": "OFFLINE"
+      }
+    },
+    {
+      "name": "Pidgin voice, cloud disabled",
+      "signals": {
+        "voiceLanguage": "pcm_yo",
+        "localSpeech": "unavailable",
+        "online": true,
+        "cloudEnabled": false
+      },
+      "expected": {
+        "target": "queue",
+        "reason": "SPEECH_CLOUD",
+        "queueReason": "CLOUD_DISABLED"
+      }
+    }
+  ],
+  "speechCheck": [
+    {
+      "name": "clear English",
+      "transcript": "sold three bags of rice forty five thousand",
+      "confidence": 0.92,
+      "expectedMixed": false
+    },
+    {
+      "name": "English with no confidence reported",
+      "transcript": "paid transport fifteen hundred",
+      "confidence": null,
+      "expectedMixed": false
+    },
+    {
+      "name": "nothing heard",
+      "transcript": "   ",
+      "confidence": null,
+      "expectedMixed": true
+    },
+    {
+      "name": "Pidgin words heard",
+      "transcript": "Mama Nkechi don pay the 3k wey she dey owe",
+      "confidence": 0.9,
+      "expectedMixed": true
+    },
+    {
+      "name": "Yoruba words heard",
+      "transcript": "mo ta ìrẹsì àpò mẹ́ta",
+      "confidence": 0.8,
+      "expectedMixed": true
+    },
+    {
+      "name": "recogniser unsure",
+      "transcript": "sold oh what do you",
+      "confidence": 0.31,
+      "expectedMixed": true
+    },
+    {
+      "name": "confidence exactly at the limit is trusted",
+      "transcript": "sold milk two thousand",
+      "confidence": 0.5,
+      "expectedMixed": false
+    }
+  ]
+}

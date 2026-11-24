@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Every UI string lives here, so Yoruba, Hausa, and Igbo can be added later.
+        Plain words for traders, mirroring web/src/shared/messages/en.ts: no technical terms
+        (no "device", "cloud", "sync", "model", "JSON", "analytics").
+    -->
+    <string name="app_name">Kpakam</string>
+
+    <!-- Navigation: five short labels that never squeeze -->
+    <string name="nav_home">Home</string>
+    <string name="nav_history">History</string>
+    <string name="nav_speak">Speak</string>
+    <string name="nav_debts">Debts</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Setup and sign-in -->
+    <string name="setup_not_configured">Kpakam is not set up yet. Please try again later.</string>
+    <string name="signin_needs_network">Connect to the internet once to set up Kpakam. After that it works offline.</string>
+    <string name="signin_loading">Starting…</string>
+    <string name="retry">Try again</string>
+
+    <!-- Status -->
+    <string name="status_online">Online</string>
+    <string name="status_offline_short">Offline</string>
+    <string name="status_offline">Offline — your entries are saved on this phone</string>
+    <string name="sync_pending">Not sent yet</string>
+    <string name="state_on">On</string>
+    <string name="state_off">Off</string>
+
+    <!-- Home -->
+    <string name="greeting_morning">Good morning,</string>
+    <string name="greeting_afternoon">Good afternoon,</string>
+    <string name="greeting_evening">Good evening,</string>
+    <string name="today_profit_today">Profit today</string>
+    <string name="today_sales">Sales</string>
+    <string name="today_expenses">Expenses</string>
+    <string name="today_paid_back">Paid back</string>
+    <string name="today_recent">Recent</string>
+    <string name="today_see_all">See all</string>
+    <string name="today_empty">No entries yet today. Type your first sale above.</string>
+
+    <!-- Quick entry -->
+    <string name="entry_label">What happened?</string>
+    <string name="entry_hint">e.g. sold 3 bags of rice 45k, Mama Bisi owes 10k</string>
+    <plurals name="entry_chars_left">
+        <item quantity="one">%d character left</item>
+        <item quantity="other">%d characters left</item>
+    </plurals>
+    <string name="entry_submit">Send</string>
+    <string name="entry_working">Reading your note…</string>
+    <string name="entry_queued_offline">Saved. It will be read when the network returns.</string>
+    <string name="entry_queued_data_saver">Saved. Tap Send now when you are ready to use data.</string>
+    <string name="entry_queued_cloud_disabled">Saved. It will be read when online reading is back.</string>
+    <string name="entry_queued_rate_limited">Saved. Kpakam is busy and will try again soon.</string>
+    <string name="entry_clarify">Kpakam needs more detail: %1$s</string>
+    <string name="entry_failed">Kpakam could not understand that. Try shorter words, or one sale at a time.</string>
+    <string name="entry_low_route">Please check this: it was read without network.</string>
+    <string name="entry_check_carefully">Please check this one carefully.</string>
+    <string name="entry_details_shown">Details shown</string>
+    <string name="entry_details_hidden">Tap for details</string>
+    <string name="example_sold">Sold…</string>
+    <string name="example_bought">Bought…</string>
+    <string name="example_paid_me">…paid me</string>
+    <string name="example_owes_me">…owes me</string>
+
+    <!-- Voice screen -->
+    <string name="voice_start">Speak your entry</string>
+    <string name="voice_status_listening">Listening</string>
+    <string name="voice_status_heard">Done listening</string>
+    <string name="voice_preparing">Getting the microphone ready…</string>
+    <string name="voice_live_words">What you said</string>
+    <string name="voice_live_hint">Speak naturally. If you make a mistake, just say it again.</string>
+    <string name="voice_words_later">Your words will appear when Kpakam reads your voice note.</string>
+    <string name="voice_review_hint">Tap the words to fix them, or say them again.</string>
+    <string name="voice_seconds_left">%1$ds left</string>
+    <string name="voice_say_again">Say again</string>
+    <string name="voice_done">Done</string>
+    <string name="voice_cancel">Cancel</string>
+    <string name="voice_close">Close</string>
+    <string name="voice_you_said">You said:</string>
+    <string name="voice_mixed">Mixed languages heard. Kpakam is reading your voice note online.</string>
+    <string name="voice_queued">Voice note saved. It will be read when the network returns.</string>
+    <string name="voice_mic_denied">Kpakam cannot use the microphone. Allow it in your phone settings.</string>
+    <string name="voice_nothing_heard">Kpakam did not hear anything. Please try again.</string>
+    <string name="voice_read_back">Read aloud</string>
+    <string name="voice_speech">%1$s, %2$s, %3$s naira.</string>
+
+    <!-- Drafts -->
+    <string name="drafts_title">Check and save</string>
+    <plurals name="drafts_save_all">
+        <item quantity="one">Save entry</item>
+        <item quantity="other">Save %d entries</item>
+    </plurals>
+    <string name="drafts_saving">Saving…</string>
+    <string name="drafts_discard">Discard</string>
+    <plurals name="drafts_saved">
+        <item quantity="one">Entry saved</item>
+        <item quantity="other">%d entries saved</item>
+    </plurals>
+    <string name="drafts_duplicate">Already saved. Nothing was added twice.</string>
+    <string name="drafts_ready">Ready to check</string>
+    <string name="draft_edit">Edit</string>
+    <string name="draft_remove">Discard</string>
+    <string name="draft_owes_line">%1$s still owes %2$s</string>
+
+    <!-- Editor -->
+    <string name="edit_title">Edit</string>
+    <string name="edit_kind">What kind of entry?</string>
+    <string name="edit_item">Item</string>
+    <string name="edit_total">Total (₦)</string>
+    <string name="edit_paid">Paid now (₦)</string>
+    <string name="edit_customer">Customer</string>
+    <string name="edit_done">Done</string>
+    <string name="edit_cancel">Cancel</string>
+
+    <!-- Draft kinds -->
+    <string name="kind_sale">Sale</string>
+    <string name="kind_credit_sale">Sold on credit</string>
+    <string name="kind_repayment">Customer paid back</string>
+    <string name="kind_expense">Expense</string>
+
+    <!-- Saved entry kinds (history) -->
+    <string name="ledger_kind_sale">Sale</string>
+    <string name="ledger_kind_credit_sale">Sold on credit</string>
+    <string name="ledger_kind_repayment">Paid back</string>
+    <string name="ledger_kind_expense">Expense</string>
+    <string name="ledger_kind_reversal">Undo</string>
+
+    <!-- Where a note was read -->
+    <string name="badge_device">On your phone</string>
+    <string name="badge_cloud">Online</string>
+    <string name="badge_manual">Typed by you</string>
+    <string name="badge_waiting">Waiting</string>
+
+    <!-- Reason labels: routing.md table -->
+    <string name="reason_image_input">Photos are read online</string>
+    <string name="reason_long_context">Weekly report is made online</string>
+    <string name="reason_device_unavailable">Your phone can\'t read notes yet</string>
+    <string name="reason_language">Pidgin or Yoruba heard</string>
+    <string name="reason_too_long">Long note</string>
+    <string name="reason_low_battery">Saving your battery</string>
+    <string name="reason_default_device">Free, no data used</string>
+    <string name="reason_validation_escalation">Checked again online</string>
+    <string name="reason_router_fallback">Read the best way available</string>
+    <string name="reason_speech_device">Heard on your phone</string>
+    <string name="reason_speech_cloud">Voice read online</string>
+    <string name="reason_speech_mixed">Mixed languages heard</string>
+    <string name="queue_offline">Waiting for network</string>
+    <string name="queue_data_saver">Waiting for you to tap Send now</string>
+    <string name="queue_cloud_disabled">Online reading is paused</string>
+    <string name="queue_rate_limited">Busy, will try again soon</string>
+
+    <!-- Waiting notes -->
+    <string name="jobs_review">Check</string>
+    <string name="jobs_send_now_size">Send now (about %1$s of data)</string>
+    <string name="jobs_retry">Try again</string>
+    <string name="jobs_cancel">Cancel</string>
+    <string name="jobs_failed">Kpakam could not read this one</string>
+    <string name="jobs_voice">Voice note</string>
+    <string name="jobs_text">Typed note</string>
+
+    <!-- Who owes you -->
+    <string name="owed_title">Who owes you</string>
+    <string name="owed_total">Total owed to you</string>
+    <plurals name="owed_from_customers">
+        <item quantity="one">from %d customer</item>
+        <item quantity="other">from %d customers</item>
+    </plurals>
+    <string name="owed_empty">Nobody owes you money. When you sell on credit, the customer shows here.</string>
+    <string name="owed_owes_you">owes you</string>
+    <string name="owed_in_credit">You owe them</string>
+    <string name="owed_balance_clear">All paid</string>
+    <string name="customer_history">History</string>
+    <string name="customer_not_found">Customer not found.</string>
+    <string name="customer_record_payment">Record payment</string>
+    <string name="customer_amount_paid">Amount paid (₦)</string>
+    <string name="back">Back</string>
+
+    <!-- History and corrections -->
+    <string name="history_title">History</string>
+    <string name="history_today">Today</string>
+    <string name="history_empty">No entries on this day.</string>
+    <string name="history_undo">Undo</string>
+    <string name="history_edit">Fix</string>
+    <string name="history_undone">Entry undone</string>
+    <string name="history_reversed">Undone</string>
+    <string name="history_undo_confirm">Undo this entry? Kpakam keeps a record of both.</string>
+    <string name="history_reverses">Undo of an earlier entry</string>
+    <string name="history_fix_saved">Fixed. Kpakam keeps a record of both.</string>
+    <string name="history_still_owed">%1$s still owed</string>
+
+    <!-- Errors -->
+    <string name="error_generic">Something went wrong. Your saved entries are safe.</string>
+    <string name="error_save_failed">Could not save. Please try again.</string>
+    <string name="error_already_reversed">This entry was already undone.</string>
+    <string name="error_customer_required">Add the customer’s name.</string>
+    <string name="error_paid_exceeds_total">Paid now cannot be more than the total.</string>
+    <string name="error_amount_too_small">Enter an amount above ₦0.</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_voice">Voice</string>
+    <string name="settings_section_data">Data</string>
+    <string name="settings_section_privacy">Privacy</string>
+    <string name="settings_account">Account</string>
+    <string name="settings_data_saver">Save data</string>
+    <string name="settings_data_saver_help">When on, photos and weekly reports wait until you tap Send now. Typed and spoken entries still use a little data.</string>
+    <string name="settings_voice">Language you speak</string>
+    <string name="settings_voice_auto">Any</string>
+    <string name="settings_voice_en">English</string>
+    <string name="settings_voice_pcm_yo">Pidgin or Yoruba</string>
+    <string name="settings_voice_help_auto">Kpakam works out the language for you, even when you mix English, Pidgin and Yoruba.</string>
+    <string name="settings_voice_help_en">English is heard on your phone for free when your phone allows it.</string>
+    <string name="settings_voice_help_pcm_yo">Pidgin and Yoruba voice notes are read online.</string>
+    <string name="settings_analytics">Send app speed reports (no names or money)</string>
+    <string name="settings_export">Download my records</string>
+    <string name="settings_export_done">Your records were saved.</string>
+    <string name="settings_delete_account">Delete my account and records</string>
+    <string name="settings_delete_confirm">This deletes every record. It cannot be undone. Type DELETE to confirm.</string>
+    <string name="settings_delete_word" translatable="false">DELETE</string>
+    <string name="settings_delete_button">Delete</string>
+    <string name="settings_delete_done">Your account and records were deleted.</string>
+    <string name="settings_delete_needs_network">Connect to the internet to delete your account and records.</string>
+</resources>

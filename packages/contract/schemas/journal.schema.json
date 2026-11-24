@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kpakam.app/contract/journal.schema.json",
+  "title": "Journal",
+  "description": "One immutable double-entry journal. Lines sum to zero. Stored at users/{uid}/journals/{id}. createdAt is a server timestamp and is not part of this schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "idempotencyKey", "occurredAt", "kind", "description", "lines", "reverses", "source", "schemaVersion"],
+  "properties": {
+    "id": { "$ref": "#/$defs/ulid" },
+    "idempotencyKey": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "occurredAt": {
+      "description": "ISO 8601 date-time with offset, in Africa/Lagos time.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "day": {
+      "description": "Africa/Lagos calendar day (YYYY-MM-DD) of occurredAt, for range queries.",
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["sale", "expense", "repayment", "credit_sale", "reversal"]
+    },
+    "description": { "type": "string", "maxLength": 120 },
+    "customerId": { "type": ["string", "null"] },
+    "lines": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 10,
+      "items": { "$ref": "#/$defs/line" }
+    },
+    "reverses": { "oneOf": [{ "$ref": "#/$defs/ulid" }, { "type": "null" }] },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inference", "reason", "promptVersion"],
+      "properties": {
+        "inference": {
+          "type": "string",
+          "enum": ["on_device", "in_cloud", "manual"]
+        },
+        "reason": { "type": "string", "maxLength": 40 },
+        "promptVersion": { "type": ["string", "null"], "maxLength": 40 }
+      }
+    },
+    "schemaVersion": { "const": 1 }
+  },
+  "$defs": {
+    "ulid": { "type": "string", "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$" },
+    "line": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["account", "amountKobo"],
+      "properties": {
+        "account": {
+          "type": "string",
+          "pattern": "^(cash|sales|expenses|receivable:[0-9A-HJKMNP-TV-Z]{26})$"
+        },
+        "amountKobo": {
+          "description": "Signed integer kobo. Debit is positive, credit is negative. Never zero.",
+          "type": "integer",
+          "not": { "const": 0 }
+        }
+      }
+    }
+  }
+}

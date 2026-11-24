@@ -1,0 +1,44 @@
+{
+  "parameters": {
+    "cloud_model_name": {
+      "defaultValue": { "value": "gemini-3.5-flash-lite" },
+      "description": "Gemini model that Firebase AI Logic calls for cloud parsing.",
+      "valueType": "STRING"
+    },
+    "route_max_device_chars": {
+      "defaultValue": { "value": "280" },
+      "description": "Longest note (chars) that the on-device model may parse.",
+      "valueType": "NUMBER"
+    },
+    "route_language_threshold": {
+      "defaultValue": { "value": "0.35" },
+      "description": "Pidgin/Yoruba score (0..1) above which a note is sent to the cloud model.",
+      "valueType": "NUMBER"
+    },
+    "route_min_battery": {
+      "defaultValue": { "value": "0.15" },
+      "description": "Battery level (0..1) below which an unplugged device sends work to the cloud.",
+      "valueType": "NUMBER"
+    },
+    "prompt_version_parse": {
+      "defaultValue": { "value": "parse-v2" },
+      "description": "Version of the parse prompt that both apps assemble.",
+      "valueType": "STRING"
+    },
+    "insights_enabled": {
+      "defaultValue": { "value": "true" },
+      "description": "Show the AI insights feature.",
+      "valueType": "BOOLEAN"
+    },
+    "cloud_enabled": {
+      "defaultValue": { "value": "true" },
+      "description": "Kill switch for all cloud AI calls. False keeps AI on device or queued.",
+      "valueType": "BOOLEAN"
+    },
+    "cloud_rate_limit_per_minute": {
+      "defaultValue": { "value": "10" },
+      "description": "Most cloud AI calls one device may make per minute.",
+      "valueType": "NUMBER"
+    }
+  }
+}

@@ -1,0 +1,38 @@
+# Runs the golden sentences through the cloud model and fails on a drop in accuracy.
+# Manual only: it uses real quota. Needs these repository secrets:
+#   FIREBASE_API_KEY, FIREBASE_PROJECT_ID, FIREBASE_APP_ID, APP_CHECK_DEBUG_TOKEN
+name: Cloud eval
+
+on:
+  workflow_dispatch:
+    inputs:
+      set:
+        description: Which golden set (en, pcm, all)
+        default: all
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run eval:cloud -w @kpakam/web -- --set ${{ inputs.set }}
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          APP_CHECK_DEBUG_TOKEN: ${{ secrets.APP_CHECK_DEBUG_TOKEN }}
+      - uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: eval-results
+          path: packages/contract/golden/results
+          if-no-files-found: ignore

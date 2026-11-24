@@ -1,0 +1,10 @@
+node_modules
+dist
+coverage
+playwright-report
+test-results
+native
+package-lock.json
+*.jsonl
+packages/contract/golden/results
+firebase/*.log

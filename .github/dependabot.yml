@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      firebase:
+        patterns: ['firebase', '@firebase/*', 'firebase-tools']
+      dev-tools:
+        dependency-type: development
+  - package-ecosystem: gradle
+    directory: /native/mobile
+    schedule:
+      interval: weekly
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

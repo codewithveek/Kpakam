@@ -1,0 +1,260 @@
+@import 'tailwindcss';
+
+/* Hover only where a real pointer exists; touch taps must not stick in a hover state. */
+@custom-variant hover-fine {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @slot;
+    }
+  }
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter-latin-wght.woff2') format('woff2-variations');
+}
+
+/*
+ * Kpakam Mono. A light grey canvas, white cards, and black as the one strong colour (primary
+ * actions and the hero card). Colour is reserved for meaning: green for money in, amber for money
+ * owed, red for errors. No gradients. Text on surfaces keeps at least 4.5:1 contrast.
+ */
+:root {
+  --color-bg: #ededeb;
+  --color-surface: #ffffff;
+  --color-surface-2: #f4f4f2;
+  --color-surface-3: #e8e8e5;
+  --color-border: #e3e3df;
+  --color-text: #0d0d0d;
+  --color-muted: #66665f;
+  --color-ink: #0d0d0d;
+  --color-on-ink: #ffffff;
+  --color-on-ink-muted: rgb(255 255 255 / 0.66);
+  --color-ink-line: rgb(255 255 255 / 0.14);
+  --color-primary: #0d0d0d;
+  --color-primary-strong: #000000;
+  --color-on-primary: #ffffff;
+  --color-accent: #8f5300;
+  --color-accent-soft: #f7ecd9;
+  --color-device: #12643a;
+  --color-device-soft: #e3efe7;
+  --color-cloud: #24508f;
+  --color-cloud-soft: #e5ebf5;
+  --color-income: #12643a;
+  --color-income-soft: #e2f3e7;
+  --color-warn: #9a4400;
+  --color-warn-soft: #fde3c6;
+  --color-credit: #8f5300;
+  --color-danger: #b42318;
+  --color-danger-soft: #fbe8e6;
+  --color-live: #e5484d;
+  --color-focus: #2563eb;
+  --shadow-card: 0 1px 2px rgb(13 13 13 / 0.04);
+  --shadow-float: 0 10px 30px -10px rgb(13 13 13 / 0.28), 0 2px 6px rgb(13 13 13 / 0.06);
+  /* Emil Kowalski's curves: strong ease-out for UI, iOS-like drawer curve for sheets. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-bg: #0a0a0a;
+    --color-surface: #161616;
+    --color-surface-2: #202020;
+    --color-surface-3: #2a2a2a;
+    --color-border: #262626;
+    --color-text: #f4f4f2;
+    --color-muted: #a3a39c;
+    --color-ink: #f4f4f2;
+    --color-on-ink: #0d0d0d;
+    --color-on-ink-muted: rgb(13 13 13 / 0.62);
+    --color-ink-line: rgb(13 13 13 / 0.12);
+    --color-primary: #f4f4f2;
+    --color-primary-strong: #ffffff;
+    --color-on-primary: #0d0d0d;
+    --color-accent: #f0b65a;
+    --color-accent-soft: #33280f;
+    --color-device: #7dd3a0;
+    --color-device-soft: #15291d;
+    --color-cloud: #9cc0f2;
+    --color-cloud-soft: #172235;
+    --color-income: #7dd3a0;
+    --color-income-soft: #11291b;
+    --color-warn: #f6a55a;
+    --color-warn-soft: #3b230d;
+    --color-credit: #f0b65a;
+    --color-danger: #ff8f84;
+    --color-danger-soft: #3a1714;
+    --color-live: #ff6b6f;
+    --color-focus: #8ab4ff;
+    --shadow-card: none;
+    --shadow-float: 0 12px 32px -10px rgb(0 0 0 / 0.8);
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-2: var(--color-surface-2);
+  --color-surface-3: var(--color-surface-3);
+  --color-border: var(--color-border);
+  --color-text: var(--color-text);
+  --color-muted: var(--color-muted);
+  --color-ink: var(--color-ink);
+  --color-on-ink: var(--color-on-ink);
+  --color-on-ink-muted: var(--color-on-ink-muted);
+  --color-ink-line: var(--color-ink-line);
+  --color-primary: var(--color-primary);
+  --color-primary-strong: var(--color-primary-strong);
+  --color-on-primary: var(--color-on-primary);
+  --color-accent: var(--color-accent);
+  --color-accent-soft: var(--color-accent-soft);
+  --color-device: var(--color-device);
+  --color-device-soft: var(--color-device-soft);
+  --color-cloud: var(--color-cloud);
+  --color-cloud-soft: var(--color-cloud-soft);
+  --color-income: var(--color-income);
+  --color-income-soft: var(--color-income-soft);
+  --color-warn: var(--color-warn);
+  --color-warn-soft: var(--color-warn-soft);
+  --color-credit: var(--color-credit);
+  --color-danger: var(--color-danger);
+  --color-danger-soft: var(--color-danger-soft);
+  --color-live: var(--color-live);
+  --shadow-card: var(--shadow-card);
+  --shadow-float: var(--shadow-float);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-feature-settings:
+    'cv11' 1,
+    'ss01' 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.amount {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+}
+
+/* Large display text wants tighter tracking (Apple: tracking is size-specific). */
+.display {
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+
+/* Press feedback on every pressable element: the interface heard you (100–160ms). */
+.press {
+  transition:
+    transform 160ms var(--ease-out),
+    background-color 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.press:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* Enter once, never on exit or re-render: new draft cards, toasts, and newly saved rows. */
+.enter-rise {
+  transition:
+    opacity 280ms var(--ease-out),
+    transform 280ms var(--ease-out);
+  @starting-style {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+.enter-toast {
+  transition:
+    opacity 400ms ease,
+    transform 400ms ease;
+  @starting-style {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+.reveal {
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+  @starting-style {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.sheet-enter {
+  transition: transform 420ms var(--ease-drawer);
+  @starting-style {
+    transform: translateY(100%);
+  }
+}
+.scrim-enter {
+  transition: opacity 300ms ease;
+  @starting-style {
+    opacity: 0;
+  }
+}
+
+.flash-new {
+  animation: flash-new 1.2s ease-out both;
+}
+@keyframes flash-new {
+  from {
+    background-color: var(--color-device-soft);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spinner {
+  animation: spin 700ms linear infinite;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Reduced motion: fewer, gentler animations. Keep opacity, drop movement. */
+@media (prefers-reduced-motion: reduce) {
+  .press:active:not(:disabled) {
+    transform: none;
+  }
+  .enter-rise,
+  .enter-toast,
+  .sheet-enter,
+  .reveal {
+    @starting-style {
+      transform: none;
+    }
+  }
+}

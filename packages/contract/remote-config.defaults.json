@@ -1,0 +1,10 @@
+{
+  "cloud_model_name": "gemini-3.5-flash-lite",
+  "route_max_device_chars": 280,
+  "route_language_threshold": 0.35,
+  "route_min_battery": 0.15,
+  "prompt_version_parse": "parse-v2",
+  "insights_enabled": true,
+  "cloud_enabled": true,
+  "cloud_rate_limit_per_minute": 10
+}
